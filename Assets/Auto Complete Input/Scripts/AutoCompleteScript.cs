@@ -6,12 +6,14 @@ using UnityEngine;
 using TMPro;
 
 [Serializable]
-public class PotentialPrompts {
+public class PotentialPrompts
+{
     public string text;
     public string taggedText;
     public float overlapValue;
 
-    public PotentialPrompts(string text, string taggedText, float overlapValue) {
+    public PotentialPrompts(string text, string taggedText, float overlapValue)
+    {
         this.text = text;
         this.taggedText = taggedText;
         this.overlapValue = overlapValue;
@@ -19,21 +21,25 @@ public class PotentialPrompts {
 }
 
 [Serializable]
-public class PromptTag {
+public class PromptTag
+{
     public int ID;
     public string tag;
 
-    public PromptTag(int ID, string tag) {
+    public PromptTag(int ID, string tag)
+    {
         this.ID = ID;
         this.tag = tag;
     }
 }
 
 [Serializable]
-public class Prompt {
+public class Prompt
+{
     public string text;
 
-    public Prompt(string text) {
+    public Prompt(string text)
+    {
         this.text = text;
     }
 }
@@ -66,7 +72,8 @@ public class AutoCompleteScript : MonoBehaviour
     /// Select prompt (Executes from prompt script)
     /// </summary>
     /// <param name="text">Text</param>
-    public void SelectPrompt(string text) {
+    public void SelectPrompt(string text)
+    {
         inputField.text = text;
         subInput.text = text;
         for (int i = 0; i < promptContent.childCount; i++)
@@ -94,79 +101,99 @@ public class AutoCompleteScript : MonoBehaviour
     /// <summary>
     /// On input changed by user
     /// </summary>
-    public void OnInputChanged() {
+    public void OnInputChanged()
+    {
         int count = 0;
-        if (string.IsNullOrEmpty(inputField.text.Trim())) {
-            for (int i = count; i < promptContent.childCount; i++) {
+        if (string.IsNullOrEmpty(inputField.text.Trim()))
+        {
+            for (int i = count; i < promptContent.childCount; i++)
+            {
                 promptContent.GetChild(i).gameObject.SetActive(false);
             }
             subInput.text = "";
             return;
         }
         string targetText = isCaseSensitive ? inputField.text.Trim() : inputField.text.Trim().ToLower();
-        if (isSearchByKeywords) {
+        if (isSearchByKeywords)
+        {
             var keywords = targetText.Split(' ');
             var potentialPrompts = new List<PotentialPrompts>();
-            for(int i = 0; i < promptList.Count; i++) {
+            for (int i = 0; i < promptList.Count; i++)
+            {
                 var promptText = isCaseSensitive ? promptList[i].text : promptList[i].text.ToLower();
                 bool isCorrect = true;
                 float overlapValue = 0;
                 var tagsList = new List<PromptTag>();
-                for(int j = 0; j < keywords.Length; j++) {
-                    if (!promptText.Contains(keywords[j])) {
+                for (int j = 0; j < keywords.Length; j++)
+                {
+                    if (!promptText.Contains(keywords[j]))
+                    {
                         isCorrect = false;
-                    } else {
+                    }
+                    else
+                    {
                         overlapValue += ((float)keywords[j].Length) / ((float)promptText.Length);
                         tagsList.Add(new PromptTag(promptText.IndexOf(keywords[j]), openTagSelected));
                         tagsList.Add(new PromptTag(promptText.IndexOf(keywords[j]) + keywords[j].Length, closeTagSelected));
                     }
                 }
-                if (isCorrect) {
+                if (isCorrect)
+                {
                     tagsList.Sort(Comparator);
                     string taggedText = promptList[i].text;
-                    for (int j = 0; j < tagsList.Count; j++) {
+                    for (int j = 0; j < tagsList.Count; j++)
+                    {
                         taggedText = taggedText.Insert(tagsList[j].ID, tagsList[j].tag);
                     }
                     potentialPrompts.Add(new PotentialPrompts(promptList[i].text, taggedText, overlapValue));
                 }
             }
-            for(int i = 0; i < Mathf.Min(maxCount, potentialPrompts.Count); i++) {
+            for (int i = 0; i < Mathf.Min(maxCount, potentialPrompts.Count); i++)
+            {
                 var newPrompt = promptContent.childCount > count ? promptContent.GetChild(count).gameObject : Instantiate(promptTemplate, promptContent);
                 newPrompt.SetActive(true);
                 newPrompt.GetComponent<PromptScript>().Init(potentialPrompts[i].text, potentialPrompts[i].taggedText, this);
                 count++;
             }
-        } else {
+        }
+        else
+        {
             var potentialPrompts = new List<PotentialPrompts>();
-            for (int i = 0; i < promptList.Count; i++) {
+            for (int i = 0; i < promptList.Count; i++)
+            {
                 var promptText = isCaseSensitive ? promptList[i].text : promptList[i].text.ToLower();
                 bool isCorrect = true;
                 float overlapValue = 0;
                 overlapValue += ((float)targetText.Length) / ((float)promptText.Length);
-                if (!promptText.Contains(targetText)) {
+                if (!promptText.Contains(targetText))
+                {
                     isCorrect = false;
                 }
-                if (isCorrect) {
+                if (isCorrect)
+                {
                     string taggedText = promptList[i].text;
                     taggedText = taggedText.Insert(promptText.IndexOf(targetText) + targetText.Length, closeTagSelected);
                     taggedText = taggedText.Insert(promptText.IndexOf(targetText), openTagSelected);
                     potentialPrompts.Add(new PotentialPrompts(promptList[i].text, taggedText, overlapValue));
                 }
             }
-            for (int i = 0; i < Mathf.Min(maxCount, potentialPrompts.Count); i++) {
+            for (int i = 0; i < Mathf.Min(maxCount, potentialPrompts.Count); i++)
+            {
                 var newPrompt = promptContent.childCount > count ? promptContent.GetChild(count).gameObject : Instantiate(promptTemplate, promptContent);
                 newPrompt.SetActive(true);
                 newPrompt.GetComponent<PromptScript>().Init(potentialPrompts[i].text, potentialPrompts[i].taggedText, this);
                 count++;
             }
         }
-        for(int i = count; i < promptContent.childCount; i++) {
+        for (int i = count; i < promptContent.childCount; i++)
+        {
             promptContent.GetChild(i).gameObject.SetActive(false);
         }
         if (promptContent.GetChild(0).gameObject.activeSelf)
         {
-               subInput.text = promptContent.GetChild(0).GetComponent<PromptScript>().text;
-        } else
+            subInput.text = promptContent.GetChild(0).GetComponent<PromptScript>().text;
+        }
+        else
         {
             subInput.text = "";
         }
@@ -175,7 +202,14 @@ public class AutoCompleteScript : MonoBehaviour
 
     public void OnEndEdit()
     {
-        StartCoroutine(DelayEdit());
+        try
+        {
+            StartCoroutine(DelayEdit());
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e.Message);
+        }
     }
 
     IEnumerator DelayEdit()
@@ -191,11 +225,13 @@ public class AutoCompleteScript : MonoBehaviour
         }
     }
 
-    int Comparator(PromptTag first, PromptTag second) {
+    int Comparator(PromptTag first, PromptTag second)
+    {
         return first.ID > second.ID ? -1 : 1;
     }
 
-    int ComparatorPrompt(PotentialPrompts first, PotentialPrompts second) {
+    int ComparatorPrompt(PotentialPrompts first, PotentialPrompts second)
+    {
         return first.overlapValue > second.overlapValue ? -1 : 1;
     }
 }

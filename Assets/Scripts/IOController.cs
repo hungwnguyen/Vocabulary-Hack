@@ -31,7 +31,7 @@ namespace IO
                     {
                         string key = newName + voca.vocabularyName,
                                 oldKey = oldName + voca.vocabularyName;
-                        if (voca.containTexture)
+                        if (!string.IsNullOrEmpty(voca.texturePath))
                         {
                             Folder.texture[key] = Folder.texture[oldKey];
                         }
@@ -94,7 +94,7 @@ namespace IO
                     foreach (Vocabulary v in Folder.vocabularies[folderName])
                     {
                         string key = folderName + v.vocabularyName;
-                        if (v.containTexture)
+                        if (!string.IsNullOrEmpty(v.texturePath))
                         {
                             Folder.texture[key] = GetTexture2D(v.vocabularyName, folderName);
                         }
@@ -180,7 +180,6 @@ namespace IO
             if (!Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
-                Debug.Log("Đã tạo thư mục mới: " + directoryPath);
             }
         }
 
@@ -193,7 +192,7 @@ namespace IO
                 {
                     foreach (Vocabulary voca in Folder.vocabularies[fileName])
                     {
-                        if (voca.containTexture)
+                        if (!string.IsNullOrEmpty(voca.texturePath))
                         {
                             Folder.texture.Remove(fileName + voca.vocabularyName);
                         }
@@ -242,10 +241,10 @@ namespace IO
         public string vocabularyName;
         public string translation;
         public string type;
-        public bool containTexture;
+        public string texturePath;
         public override string ToString()
         {
-            return $"Vocabulary: {vocabularyName}, Translation: {translation}, Type: {type}, containTexture: {containTexture}";
+            return $"Vocabulary: {vocabularyName}, Translation: {translation}, Type: {type}, texturePath: {texturePath}";
         }
 
         public Vocabulary(ItemData item)
@@ -253,7 +252,7 @@ namespace IO
             this.vocabularyName = item.vocabularyName;
             this.translation = item.translation;
             this.type = item.type;
-            this.containTexture = item.texture != null;
+            this.texturePath = item.texture == null ? "" : string.IsNullOrEmpty(this.texturePath) ? "." : texturePath;
         }
         public Vocabulary()
         {

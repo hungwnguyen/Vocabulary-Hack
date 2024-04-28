@@ -13,6 +13,8 @@ namespace Hungw
 {
     public class APIController : MonoBehaviour
     {
+        public delegate void OnUploadImageComplete(string imageUrl, int index);
+        public OnUploadImageComplete onUploadImageComplete;
         [SerializeField] private string autoCompletePath, autoCompletePath2;
         [SerializeField] private string soundPathUK, soundPathUS, ServerURL, ServerKey, jsonblobURL;
         private AutocompleteVocabulary autocompleteVocabulary;
@@ -21,7 +23,8 @@ namespace Hungw
         private int currentAPInumber;
         private string currentPath;
         private bool isChangePath;
-        private string result;
+
+        private int imageCount;
 
         private void Awake()
         {
@@ -36,6 +39,8 @@ namespace Hungw
             currentTranslations = new Dictionary<string, string[]>();
             currentPath = autoCompletePath;
             isChangePath = false;
+            imageCount = 0;
+            this.onUploadImageComplete += SetOnUploadImageComplete;
             if (Instance == null)
             {
                 Instance = this;
@@ -47,25 +52,175 @@ namespace Hungw
             }
         }
 
-        public void UploadJsonBlob()
+        public void SetOnUploadImageComplete(string url, int index)
         {
-            string json = JsonConvert.SerializeObject(IOController.Folder.vocabularies[IOController.CurrentFolderName], Formatting.Indented);
-            RestClient.Post(jsonblobURL, json).Then(res =>
+            IOController.Folder.vocabularies[IOController.CurrentFolderName][index].texturePath = url;
+            imageCount++;
+            if (imageCount == IOController.Folder.vocabularies[IOController.CurrentFolderName].Length)
             {
-                Debug.Log(res.Text);
-            }).Catch(err =>
-            {
-                Debug.Log(err.Message);
-            });
+                imageCount = 0;
+                ShareJson();
+            }
         }
 
-        public void UploadImageFile(string imageName, string folderName)
+        public void CancelUploadImage()
+        {
+            imageCount = 0;
+        }
+
+        private void ShareJson()
+        {
+            string blodId = PlayerPrefs.GetString(IOController.CurrentFolderName, "");
+            if (string.IsNullOrEmpty(blodId))
+            {
+                UploadDataJsonBlob();
+            }
+            else
+            {
+                UpdateDataJsonBlob(blodId);
+            }
+        }
+
+        public void ShareData()
+        {
+            bool isUploadImage = false;
+            for (int i = 0; i < IOController.Folder.vocabularies[IOController.CurrentFolderName].Length; i++)
+            {
+                if (!string.IsNullOrEmpty(IOController.Folder.vocabularies[IOController.CurrentFolderName][i].texturePath))
+                {
+                    isUploadImage = true;
+                    UploadImageFile(IOController.Folder.vocabularies[IOController.CurrentFolderName][i].vocabularyName, IOController.CurrentFolderName, i);
+                }
+            }
+            if (!isUploadImage)
+            {
+                ShareJson();
+            }
+        }
+
+        public void DeleteData()
+        {
+            string blodId = PlayerPrefs.GetString(IOController.CurrentFolderName, "");
+            if (!string.IsNullOrEmpty(blodId))
+            {
+                DeleteDataJsonBlob(blodId);
+                PlayerPrefs.DeleteKey(IOController.CurrentFolderName);
+            }
+        }
+
+        public void UploadDataJsonBlob()
+        {
+            StartCoroutine(UploadJsonBlob(IOController.Folder.vocabularies[IOController.CurrentFolderName]));
+        }
+
+        public void GetDataJsonBlob(string blobId)
+        {
+            StartCoroutine(GetJsonBlob(blobId));
+        }
+
+        public void UpdateDataJsonBlob(string blobId)
+        {
+            StartCoroutine(UpdateJsonBlob(blobId, IOController.Folder.vocabularies[IOController.CurrentFolderName]));
+        }
+
+        public void DeleteDataJsonBlob(string blobId)
+        {
+            StartCoroutine(DeleteJsonBlob(blobId));
+        }
+
+
+        // Method to retrieve a JSON Blob
+        private IEnumerator GetJsonBlob(string blobId)
+        {
+            var request = new UnityWebRequest(jsonblobURL + blobId, "GET");
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.SetRequestHeader("Accept", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log(request.downloadHandler.text);
+            }
+            else
+            {
+                Debug.Log(request.error);
+            }
+        }
+
+        // Method to update a JSON Blob
+        private IEnumerator UpdateJsonBlob(string blobId, object data)
+        {
+            var jsonData = JsonConvert.SerializeObject(data);
+            var request = new UnityWebRequest(jsonblobURL + blobId, "PUT");
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.SetRequestHeader("Accept", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log(request.downloadHandler.text);
+            }
+            else
+            {
+                Debug.Log(request.error);
+            }
+        }
+
+        // Method to delete a JSON Blob
+        private IEnumerator DeleteJsonBlob(string blobId)
+        {
+            var request = new UnityWebRequest(jsonblobURL + blobId, "DELETE");
+            request.downloadHandler = new DownloadHandlerBuffer();
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log("Blob deleted successfully");
+            }
+            else
+            {
+                Debug.Log(request.error);
+            }
+        }
+        private IEnumerator UploadJsonBlob(object data)
+        {
+            var jsonData = JsonConvert.SerializeObject(data);
+            var request = new UnityWebRequest(jsonblobURL, "POST");
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.SetRequestHeader("Accept", "application/json");
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success && request.responseCode == 201)
+            {
+                string url = request.GetResponseHeader("Location");
+                string blobId = url.Substring(url.LastIndexOf("/") + 1);
+                Debug.Log(blobId);
+                PlayerPrefs.SetString(IOController.CurrentFolderName, blobId);
+            }
+            else
+            {
+                Debug.Log(request.error);
+            }
+        }
+
+        public void UploadImageFile(string imageName, string folderName, int index)
         {
             string key = folderName + imageName;
-            StartCoroutine(UploadImageCoroutine(IOController.Folder.texture[key]));
+            StartCoroutine(UploadImageCoroutine(IOController.Folder.texture[key], index));
         }
 
-        IEnumerator UploadImageCoroutine(Texture2D textureToSave)
+        IEnumerator UploadImageCoroutine(Texture2D textureToSave, int index)
         {
             using (var client = new HttpClient())
             {
@@ -94,6 +249,7 @@ namespace Hungw
                     Root root = JsonConvert.DeserializeObject<Root>(responseString.Result);
                     // TODO: Handle the response
                     Debug.Log(root.image.url);
+                    onUploadImageComplete(root.image.url, index);
                 }
             }
         }
@@ -260,6 +416,11 @@ namespace Hungw
 }
 namespace HungwAPi
 {
+
+    public class JSONBlob
+    {
+        public string Location { get; set; }
+    }
     public class Success
     {
         public string message { get; set; }

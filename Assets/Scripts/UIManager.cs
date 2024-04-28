@@ -139,6 +139,7 @@ namespace Hungw
 
         public void DeleteFile()
         {
+            APIController.Instance.DeleteData();
             StartCoroutine(DeleteAsysn());
         }
 
