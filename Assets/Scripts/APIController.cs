@@ -75,8 +75,10 @@ namespace Hungw
             }
             ResetUI();
             blodId = value;
-            GetDataJsonBlob(value);
             StartCoroutine(ProgressAnimation(50));
+
+            GetDataJsonBlob(value);
+
             _OnProgress.Invoke();
         }
 

@@ -77,15 +77,6 @@ namespace FancyScrollView.Example09
                     }
                 }
             }
-            if (IOController.Folder.vocabularies.Keys.Count > 1)
-            {
-                IOController.Folder.vocabularies.Clear();
-                IOController.Folder.texture.Clear();
-            }
-            if (!IOController.Folder.vocabularies.ContainsKey(folderName))
-            {
-                IOController.Folder.vocabularies[folderName] = new Vocabulary[0];
-            }
             Vocabulary[] current = new Vocabulary[items.Length];
             IOController.CreateDirectory(folderName, "/Image/");
             for (int i = 0; i < items.Length; i++)
@@ -103,6 +94,7 @@ namespace FancyScrollView.Example09
                 {
                     if (!IOController.Folder.texture.ContainsKey(key))
                     {
+                        Debug.Log(key);
                         IOController.Folder.texture[key] = null;
                     }
                     else if (IOController.Folder.texture[key] != null)

@@ -84,7 +84,7 @@ namespace IO
                 using (StreamReader reader = new StreamReader(path))
                 {
                     json = reader.ReadToEnd();
-                    if (IOController.Folder.vocabularies.Keys.Count > 1)
+                    if (IOController.Folder.vocabularies.Keys.Count > 6)
                     {
                         IOController.Folder.vocabularies.Clear();
                         IOController.Folder.texture.Clear();
@@ -254,7 +254,6 @@ namespace IO
             this.type = item.type;
             this.texturePath = item.texture == null ? "" : string.IsNullOrEmpty(texturePathCurrent) ? "." :
             item.isChangeTexture ? "." : texturePathCurrent;
-            Debug.Log(texturePath);
         }
         public Vocabulary()
         {
