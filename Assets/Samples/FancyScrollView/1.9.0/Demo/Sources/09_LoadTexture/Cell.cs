@@ -12,6 +12,7 @@ using TMPro;
 using HungwNguyen.MUIP;
 using Hungw;
 using System.Collections;
+using Unity.VisualScripting;
 
 namespace FancyScrollView.Example09
 {
@@ -29,12 +30,9 @@ namespace FancyScrollView.Example09
         private Texture2D texture;
         [SerializeField] private AutoCompleteScript autoCompleteScript;
 
-        private bool isDelayPlayMusic = false; 
+        private bool isDelayPlayMusic = false;
 
         public bool isEdit { get; set; }
-        [System.Obsolete]
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-
 
         public override void UpdateContent(ItemData itemData)
         {

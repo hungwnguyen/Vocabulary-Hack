@@ -8,6 +8,7 @@ using UnityEngine.Events;
 using IO;
 using UnityEngine.SceneManagement;
 using HungwNguyen.MUIP;
+using UnityEngine.UI;
 
 namespace Hungw
 {
@@ -36,7 +37,7 @@ namespace Hungw
         [SerializeField] private AutoCompleteScript AutoCompleteScript;
         [SerializeField] private NotificationManager saveData;
         [SerializeField] private CanvasGroup canvas;
-
+        [SerializeField] private Slider slider;
         private bool isDelayToSave;
 
         public static UIManager Instance { get; private set; }
@@ -58,6 +59,16 @@ namespace Hungw
         #endregion
 
         #region Unity Events
+
+        public void IncreaseScrollView09()
+        {
+            slider.value++;
+        }
+
+        public void DecreaseScrollView09()
+        {
+            slider.value--;
+        }
 
         private void CacheData()
         {
@@ -134,13 +145,16 @@ namespace Hungw
             IOController.CurrentFolderName = value;
             AutoCompleteScript.UpdatePromtList(IOController.Folder.name);
             Example01.Instance.UpdateData();
+            PlayerPrefs.DeleteKey(IOController.CurrentFolderName);
         }
         #endregion
 
         public void DeleteFile()
         {
             APIController.Instance.DeleteData();
-            StartCoroutine(DeleteAsysn());
+            IOController.DeleteFile(IOController.CurrentFolderName);
+            AutoCompleteScript.UpdatePromtList(IOController.Folder.name);
+            Example01.Instance.UpdateData();
         }
 
         public void OpenInternetNotification()
@@ -151,22 +165,16 @@ namespace Hungw
         {
             SoundManager.CreatePlayFXSound();
         }
-        private IEnumerator DeleteAsysn()
-        {
-
-            IOController.DeleteFile(IOController.CurrentFolderName);
-            AutoCompleteScript.UpdatePromtList(IOController.Folder.name);
-            Example01.Instance.UpdateData();
-            yield return new WaitForEndOfFrame();
-            notification.text = "Chúc mừng ký chủ đã xóa thành công! thư mục khỏi hệ thống!";
-            _customEvent2.Invoke();
-        }
 
         public void ChangeStep(int value)
         {
             switch (value)
             {
                 case 1:
+                    if (string.IsNullOrEmpty(folderName.text))
+                    {
+                        return;
+                    }
                     if (CheckSyntax(folderName.text) || CheckOverLap(folderName.text))
                     {
                         break;
@@ -176,7 +184,7 @@ namespace Hungw
                     _customEvent1.Invoke();
                     break;
                 case 2:
-                    SaveFolder(() => _customEvent2.Invoke());
+                    SaveFolder(false, () => _customEvent2.Invoke());
                     break;
                 case 3:
                     SaveFolder();
@@ -184,7 +192,7 @@ namespace Hungw
             }
         }
 
-        private void SaveFolder(Action afterSaveAction = null)
+        public void SaveFolder(bool isSaveFromAPI = false, Action afterSaveAction = null)
         {
             if (isDelayToSave)
             {
@@ -194,7 +202,7 @@ namespace Hungw
             {
                 StartCoroutine(DelayToSave());
             }
-            string mes = FancyScrollView.Example09.ScrollView.Instance.CheckExeptionAndSave(IOController.CurrentFolderName);
+            string mes = FancyScrollView.Example09.ScrollView.Instance.CheckExeptionAndSave(IOController.CurrentFolderName, isSaveFromAPI);
             if (mes != null)
             {
                 bug.text = mes;

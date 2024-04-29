@@ -18,7 +18,7 @@ namespace FancyScrollView.Example09
 
         [SerializeField] ScrollView scrollView = default;
         [SerializeField] private Slider slider;
-        
+
         private int size;
         public static Example09 Instance { get; private set; }
         public void Start()
@@ -47,6 +47,10 @@ namespace FancyScrollView.Example09
             for (int i = 0; i < size; i++)
             {
                 string key = name + IOController.Folder.vocabularies[name][i].vocabularyName;
+                if (!IOController.Folder.texture.ContainsKey(key))
+                {
+                    IOController.Folder.texture[key] = null;
+                }
                 itemData[i] = new ItemData(
                     IOController.Folder.vocabularies[name][i].vocabularyName,
                     IOController.Folder.vocabularies[name][i].translation,

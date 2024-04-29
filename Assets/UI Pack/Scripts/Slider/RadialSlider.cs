@@ -86,6 +86,12 @@ namespace HungwNguyen.MUIP
             UpdateUI();
         }
 
+        public void SetSliderValue(float value)
+        {
+            sliderImage.fillAmount = value / maxValue;
+            valueText.text = ((int)(value / maxValue * 100)) + "%";
+        }
+
         public void OnPointerDown(PointerEventData eventData)
         {
             hitRectTransform = eventData.pointerCurrentRaycast.gameObject.GetComponent<RectTransform>();

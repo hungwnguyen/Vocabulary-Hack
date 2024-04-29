@@ -7,25 +7,41 @@ using IO;
 using HungwAPi;
 using System.Net.Http;
 using System.Collections;
-using System.IO;
+using HungwNguyen.MUIP;
+using UnityEngine.Events;
+using TMPro;
 
 namespace Hungw
 {
     public class APIController : MonoBehaviour
     {
-        public delegate void OnUploadImageComplete(string imageUrl, int index);
-        public OnUploadImageComplete onUploadImageComplete;
+
+        #region variables
+
+        [Space(5f), Header("Run when progress start!"), Space(5f)]
+        public UnityEvent _OnProgress = new UnityEvent();
+        [Space(5f), Header("Run when get data success!"), Space(5f)]
+        public UnityEvent _OnGetImageSuccess = new UnityEvent();
+        [Space(5f), Header("Run when get data error!"), Space(5f)]
+        public UnityEvent _OnGetDataError = new UnityEvent();
         [SerializeField] private string autoCompletePath, autoCompletePath2;
         [SerializeField] private string soundPathUK, soundPathUS, ServerURL, ServerKey, jsonblobURL;
+        [SerializeField] private RadialSlider progressSlider;
+        [SerializeField] private TMP_Text progressText;
+        /// <summary>
+        /// The speed progress of the API controller.
+        /// </summary>
+        [SerializeField] private float speedProgress;
+        [SerializeField] private TMP_InputField blodInputField;
         private AutocompleteVocabulary autocompleteVocabulary;
         public static APIController Instance { get; private set; }
         public Dictionary<string, string[]> currentTranslations;
-        private int currentAPInumber;
-        private string currentPath;
+        private int currentAPInumber, maxCount;
+        private string currentPath, blodId;
         private bool isChangePath;
-
+        private HungwAPi.Folder folder;
         private int imageCount;
-
+        #endregion
         private void Awake()
         {
             if (PlayerPrefs.GetInt("Image", 0) == 0)
@@ -39,8 +55,7 @@ namespace Hungw
             currentTranslations = new Dictionary<string, string[]>();
             currentPath = autoCompletePath;
             isChangePath = false;
-            imageCount = 0;
-            this.onUploadImageComplete += SetOnUploadImageComplete;
+            this.blodInputField.onEndEdit.AddListener(OnblodInputFieldEndEdit);
             if (Instance == null)
             {
                 Instance = this;
@@ -52,65 +67,143 @@ namespace Hungw
             }
         }
 
-        public void SetOnUploadImageComplete(string url, int index)
+        private void OnblodInputFieldEndEdit(string value)
         {
-            IOController.Folder.vocabularies[IOController.CurrentFolderName][index].texturePath = url;
-            imageCount++;
-            if (imageCount == IOController.Folder.vocabularies[IOController.CurrentFolderName].Length)
+            if (string.IsNullOrEmpty(value))
             {
-                imageCount = 0;
-                ShareJson();
+                return;
             }
+            ResetUI();
+            blodId = value;
+            GetDataJsonBlob(value);
+            StartCoroutine(ProgressAnimation(50));
+            _OnProgress.Invoke();
         }
 
-        public void CancelUploadImage()
+        public void CopyText()
+        {
+            GUIUtility.systemCopyBuffer = PlayerPrefs.GetString(IOController.CurrentFolderName);
+        }
+
+        private void ResetUI()
         {
             imageCount = 0;
-        }
-
-        private void ShareJson()
-        {
-            string blodId = PlayerPrefs.GetString(IOController.CurrentFolderName, "");
-            if (string.IsNullOrEmpty(blodId))
-            {
-                UploadDataJsonBlob();
-            }
-            else
-            {
-                UpdateDataJsonBlob(blodId);
-            }
+            progressText.transform.GetChild(0).gameObject.SetActive(false);
+            this.progressSlider.SetSliderValue(0);
+            this.progressSlider.currentValue = 0;
+            progressText.text = "Đang tải dữ liệu vui lòng đợi!";
         }
 
         public void ShareData()
         {
+            _OnProgress.Invoke();
+            ResetUI();
+            int length = IOController.Folder.vocabularies[IOController.CurrentFolderName].Length;
+            StartCoroutine(ProgressAnimation((float)imageCount / length * 100));
+            maxCount = 0;
+            progressSlider.currentValue = (float)imageCount / maxCount * 100;
+            imageCount++;
             bool isUploadImage = false;
-            for (int i = 0; i < IOController.Folder.vocabularies[IOController.CurrentFolderName].Length; i++)
+            for (int i = 0; i < length; i++)
             {
                 if (!string.IsNullOrEmpty(IOController.Folder.vocabularies[IOController.CurrentFolderName][i].texturePath))
                 {
                     isUploadImage = true;
-                    UploadImageFile(IOController.Folder.vocabularies[IOController.CurrentFolderName][i].vocabularyName, IOController.CurrentFolderName, i);
+                    maxCount++;
                 }
             }
             if (!isUploadImage)
             {
                 ShareJson();
+                StartCoroutine(ProgressAnimation(100));
             }
+            else
+            {
+                StartCoroutine(ProgressAnimation(1 / maxCount * 100));
+            }
+            for (int i = 0; i < length; i++)
+            {
+                if (!string.IsNullOrEmpty(IOController.Folder.vocabularies[IOController.CurrentFolderName][i].texturePath))
+                {
+                    UploadImageFile(IOController.Folder.vocabularies[IOController.CurrentFolderName][i].vocabularyName, IOController.CurrentFolderName, i);
+                }
+            }
+        }
+
+        public void SetOnUploadImageComplete(string url, int index)
+        {
+            IOController.Folder.vocabularies[IOController.CurrentFolderName][index].texturePath = url;
+            if (imageCount == maxCount)
+            {
+                imageCount = 0;
+                ShareJson();
+            }
+            else
+            {
+                progressSlider.currentValue = (float)imageCount / maxCount * 100;
+                imageCount++;
+                StartCoroutine(ProgressAnimation((imageCount - 0.02f) / maxCount * 100));
+            }
+
+        }
+
+        IEnumerator ProgressAnimation(float targetValue)
+        {
+
+            while (progressSlider.currentValue < targetValue)
+            {
+                progressSlider.currentValue += UnityEngine.Random.Range(0.5f, 1.5f) * Time.deltaTime * speedProgress;
+                if (progressSlider.currentValue > targetValue)
+                {
+                    progressSlider.currentValue = targetValue;
+                    progressSlider.SetSliderValue(progressSlider.currentValue);
+                    yield break;
+                }
+                progressSlider.SetSliderValue(progressSlider.currentValue);
+                yield return new WaitForEndOfFrame();
+            }
+        }
+
+        public void CancelUploadImage()
+        {
+            StopAllCoroutines();
+        }
+
+        private void ShareJson()
+        {
+            UploadDataJsonBlob();
+            //blodId = PlayerPrefs.GetString(IOController.CurrentFolderName, "");
+            // if (string.IsNullOrEmpty(blodId))
+            // {
+            //     UploadDataJsonBlob();
+            // }
+            // else
+            // {
+            //     UpdateDataJsonBlob(blodId);
+            // }
         }
 
         public void DeleteData()
         {
-            string blodId = PlayerPrefs.GetString(IOController.CurrentFolderName, "");
+            blodId = PlayerPrefs.GetString(IOController.CurrentFolderName, "");
             if (!string.IsNullOrEmpty(blodId))
             {
-                DeleteDataJsonBlob(blodId);
                 PlayerPrefs.DeleteKey(IOController.CurrentFolderName);
             }
         }
 
+        private HungwAPi.Folder GetFolder()
+        {
+            folder = new HungwAPi.Folder();
+            folder.folderName = IOController.CurrentFolderName;
+            folder.vocabularies = IOController.Folder.vocabularies[IOController.CurrentFolderName];
+            return folder;
+        }
+
         public void UploadDataJsonBlob()
         {
-            StartCoroutine(UploadJsonBlob(IOController.Folder.vocabularies[IOController.CurrentFolderName]));
+
+            StartCoroutine(UploadJsonBlob(GetFolder()));
         }
 
         public void GetDataJsonBlob(string blobId)
@@ -120,7 +213,7 @@ namespace Hungw
 
         public void UpdateDataJsonBlob(string blobId)
         {
-            StartCoroutine(UpdateJsonBlob(blobId, IOController.Folder.vocabularies[IOController.CurrentFolderName]));
+            StartCoroutine(UpdateJsonBlob(blobId, GetFolder()));
         }
 
         public void DeleteDataJsonBlob(string blobId)
@@ -141,12 +234,65 @@ namespace Hungw
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                Debug.Log(request.downloadHandler.text);
+                this.folder = JsonConvert.DeserializeObject<HungwAPi.Folder>(request.downloadHandler.text);
+                if (IOController.Folder.name.Contains(folder.folderName))
+                {
+                    for (int i = 1; ; i++)
+                    {
+                        if (!IOController.Folder.name.Contains(folder.folderName + $"({i})"))
+                        {
+                            folder.folderName = folder.folderName + $"({i})";
+                            break;
+                        }
+                    }
+                }
+                IOController.CurrentFolderName = folder.folderName;
+                IOController.Folder.vocabularies[folder.folderName] = folder.vocabularies;
+                OnGetJsonBlobComplete();
             }
             else
             {
-                Debug.Log(request.error);
+                _OnGetDataError.Invoke();
+                UIManager.Instance.bug.text = "Không tìm thấy dữ liệu!";
+                StopAllCoroutines();
             }
+        }
+        public void OnGetJsonBlobComplete()
+        {
+            progressSlider.currentValue = 50;
+            StartCoroutine(DownloadImages());
+        }
+
+        public IEnumerator DownloadImages()
+        {
+            for (int i = 0; i < folder.vocabularies.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(folder.vocabularies[i].texturePath))
+                {
+                    string key = folder.folderName + folder.vocabularies[i].vocabularyName;
+                    UnityWebRequest request = UnityWebRequestTexture.GetTexture(folder.vocabularies[i].texturePath);
+
+                    yield return request.SendWebRequest();
+
+                    if (request.result == UnityWebRequest.Result.Success)
+                    {
+                        Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
+                        IOController.Folder.texture.Add(key, texture);
+                        progressSlider.currentValue = 50 + 50 * i / folder.vocabularies.Length;
+                        StartCoroutine(ProgressAnimation(50 + 50 * (i + 0.98f) / folder.vocabularies.Length));
+                    }
+                    else
+                    {
+                        Debug.Log(request.error);
+                    }
+                }
+            }
+            FancyScrollView.Example09.Example09.Instance.UpdateScrollViewFromFile(this.folder.folderName);
+            progressSlider.SetSliderValue(100);
+            progressText.text = "<color=green>" + "Chúc mừng bạn đã tải xong!" + "</color>";
+            yield return new WaitForEndOfFrame();
+            _OnGetImageSuccess.Invoke();
+            UIManager.Instance.SaveFolder(true);
         }
 
         // Method to update a JSON Blob
@@ -165,11 +311,21 @@ namespace Hungw
             if (request.result == UnityWebRequest.Result.Success)
             {
                 Debug.Log(request.downloadHandler.text);
+                OnUploadJsonBlobComplete();
             }
             else
             {
                 Debug.Log(request.error);
             }
+        }
+
+        public void OnUploadJsonBlobComplete()
+        {
+            StopAllCoroutines();
+            IOController.SaveData(IOController.CurrentFolderName);
+            this.progressSlider.SetSliderValue(100);
+            progressText.text = "<color=green>" + PlayerPrefs.GetString(IOController.CurrentFolderName) + "</color>";
+            progressText.transform.GetChild(0).gameObject.SetActive(true);
         }
 
         // Method to delete a JSON Blob
@@ -205,8 +361,8 @@ namespace Hungw
             {
                 string url = request.GetResponseHeader("Location");
                 string blobId = url.Substring(url.LastIndexOf("/") + 1);
-                Debug.Log(blobId);
                 PlayerPrefs.SetString(IOController.CurrentFolderName, blobId);
+                OnUploadJsonBlobComplete();
             }
             else
             {
@@ -217,7 +373,16 @@ namespace Hungw
         public void UploadImageFile(string imageName, string folderName, int index)
         {
             string key = folderName + imageName;
-            StartCoroutine(UploadImageCoroutine(IOController.Folder.texture[key], index));
+            string url = IOController.Folder.vocabularies[folderName][index].texturePath;
+            if (!string.IsNullOrEmpty(url) && !url.Equals("."))
+            {
+                SetOnUploadImageComplete(url, index);
+                Debug.Log(url);
+            }
+            else
+            {
+                StartCoroutine(UploadImageCoroutine(IOController.Folder.texture[key], index));
+            }
         }
 
         IEnumerator UploadImageCoroutine(Texture2D textureToSave, int index)
@@ -249,7 +414,7 @@ namespace Hungw
                     Root root = JsonConvert.DeserializeObject<Root>(responseString.Result);
                     // TODO: Handle the response
                     Debug.Log(root.image.url);
-                    onUploadImageComplete(root.image.url, index);
+                    SetOnUploadImageComplete(root.image.url, index);
                 }
             }
         }
@@ -296,13 +461,13 @@ namespace Hungw
                 }
 
             })
-            // .Catch(
-            //     err =>
-            //     {
-            //         Debug.LogError(err.Message);
-            //         UIManager.Instance.bug.text = "Không có kết nối mạng!";
-            //     }
-            // )
+            .Catch(
+                err =>
+                {
+                    Debug.LogError(err.Message);
+                    UIManager.Instance.bug.text = "Không có kết nối mạng!";
+                }
+            )
             ;
         }
 
@@ -416,6 +581,11 @@ namespace Hungw
 }
 namespace HungwAPi
 {
+    public class Folder
+    {
+        public string folderName;
+        public IO.Vocabulary[] vocabularies;
+    }
 
     public class JSONBlob
     {

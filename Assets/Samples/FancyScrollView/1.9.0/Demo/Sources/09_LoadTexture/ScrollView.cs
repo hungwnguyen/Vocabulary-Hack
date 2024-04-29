@@ -15,7 +15,6 @@ namespace FancyScrollView.Example09
     {
         [SerializeField] Scroller scroller = default;
         [SerializeField] GameObject cellPrefab = default;
-
         protected override GameObject CellPrefab => cellPrefab;
         public static ScrollView Instance { get; private set; }
         private float timer;
@@ -41,7 +40,11 @@ namespace FancyScrollView.Example09
             return input;
         }
 
-        public void SetTexture(int index, Texture2D target) => ItemsSource[index].texture = target;
+        public void SetTexture(int index, Texture2D target)
+        {
+            ItemsSource[index].texture = target;
+            ItemsSource[index].isChangeTexture = true;
+        }
 
         public void SetVocabulary(int index, string vocabulary) => ItemsSource[index].vocabularyName = RemoveExtraSpaces(vocabulary);
 
@@ -54,7 +57,7 @@ namespace FancyScrollView.Example09
             return ItemsSource.ToArray();
         }
 
-        public string CheckExeptionAndSave(string folderName)
+        public string CheckExeptionAndSave(string folderName, bool isSaveFromAPi)
         {
             ItemData[] items = GetItemsSource();
             for (int i = 0; i < items.Length; i++)
@@ -71,7 +74,7 @@ namespace FancyScrollView.Example09
                         scroller.ScrollTo(j, scrollOffset);
                         this.timer = Time.time;
                         return "Từ vừa nhập bị trùng tên";
-                    }   
+                    }
                 }
             }
             if (IOController.Folder.vocabularies.Keys.Count > 1)
@@ -79,21 +82,49 @@ namespace FancyScrollView.Example09
                 IOController.Folder.vocabularies.Clear();
                 IOController.Folder.texture.Clear();
             }
-            IOController.Folder.vocabularies[folderName] = new Vocabulary[items.Length];
+            if (!IOController.Folder.vocabularies.ContainsKey(folderName))
+            {
+                IOController.Folder.vocabularies[folderName] = new Vocabulary[0];
+            }
+            Vocabulary[] current = new Vocabulary[items.Length];
             IOController.CreateDirectory(folderName, "/Image/");
             for (int i = 0; i < items.Length; i++)
             {
                 string key = folderName + items[i].vocabularyName;
-                IOController.Folder.vocabularies[folderName][i] = items[i].GetVocabulary();
-                if (items[i].texture != null)
+                if (i < IOController.Folder.vocabularies[folderName].Length)
                 {
-                    IOController.SaveTexture(items[i].texture, folderName, items[i].vocabularyName);
-                    IOController.Folder.texture[key] = items[i].texture;
-                } else
+                    current[i] = items[i].GetVocabulary(IOController.Folder.vocabularies[folderName][i].texturePath);
+                }
+                else
                 {
-                    IOController.Folder.texture[key] = null;
+                    current[i] = items[i].GetVocabulary();
+                }
+                if (isSaveFromAPi)
+                {
+                    if (!IOController.Folder.texture.ContainsKey(key))
+                    {
+                        IOController.Folder.texture[key] = null;
+                    }
+                    else if (IOController.Folder.texture[key] != null)
+                    {
+                        IOController.SaveTexture(IOController.Folder.texture[key], folderName, items[i].vocabularyName);
+                    }
+                }
+                else
+                {
+                    if (items[i].texture != null)
+                    {
+                        IOController.SaveTexture(items[i].texture, folderName, items[i].vocabularyName);
+                        IOController.Folder.texture[key] = items[i].texture;
+                    }
+                    else
+                    {
+                        IOController.Folder.texture[key] = null;
+
+                    }
                 }
             }
+            IOController.Folder.vocabularies[folderName] = current;
             IOController.SaveData(folderName);
             return null;
         }
@@ -115,15 +146,20 @@ namespace FancyScrollView.Example09
 
         public void GoToNextCell()
         {
-            if (Time.time - this.timer < 0.2f) return; 
+            if (Time.time - this.timer < 0.2f) return;
             this.timer = Time.time;
             int currentIndex = Mathf.RoundToInt(currentPosition);
             int nextIndex = currentIndex + 1;
             if (nextIndex >= GetSizeItemSource())
             {
-                nextIndex = 0; 
+                nextIndex = 0;
             }
             scroller.ScrollTo(nextIndex, scrollOffset);
+        }
+
+        public int GetIndex()
+        {
+            return Mathf.RoundToInt(currentPosition);
         }
 
         public void BackToLastCell()

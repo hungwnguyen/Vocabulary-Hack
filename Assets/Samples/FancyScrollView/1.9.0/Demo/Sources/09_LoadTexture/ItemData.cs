@@ -15,6 +15,7 @@ namespace FancyScrollView.Example09
         public string translation;
         public string type;
         public Texture2D texture;
+        public bool isChangeTexture = false;
 
 
         public override string ToString()
@@ -45,9 +46,9 @@ namespace FancyScrollView.Example09
             this.texture = null;
         }
 
-        public Vocabulary GetVocabulary()
+        public Vocabulary GetVocabulary(string texturePath = "")
         {
-            return new Vocabulary(this);
+            return new Vocabulary(this, texturePath);
         }
     }
 }

@@ -247,12 +247,14 @@ namespace IO
             return $"Vocabulary: {vocabularyName}, Translation: {translation}, Type: {type}, texturePath: {texturePath}";
         }
 
-        public Vocabulary(ItemData item)
+        public Vocabulary(ItemData item, string texturePathCurrent = "")
         {
             this.vocabularyName = item.vocabularyName;
             this.translation = item.translation;
             this.type = item.type;
-            this.texturePath = item.texture == null ? "" : string.IsNullOrEmpty(this.texturePath) ? "." : texturePath;
+            this.texturePath = item.texture == null ? "" : string.IsNullOrEmpty(texturePathCurrent) ? "." :
+            item.isChangeTexture ? "." : texturePathCurrent;
+            Debug.Log(texturePath);
         }
         public Vocabulary()
         {
