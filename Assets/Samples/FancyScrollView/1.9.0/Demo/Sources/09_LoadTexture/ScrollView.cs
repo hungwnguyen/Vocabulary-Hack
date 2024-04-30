@@ -77,6 +77,10 @@ namespace FancyScrollView.Example09
                     }
                 }
             }
+            if (!IOController.Folder.name.Contains(folderName))
+            {
+                IOController.Folder.vocabularies[folderName] = new Vocabulary[0];
+            }
             Vocabulary[] current = new Vocabulary[items.Length];
             IOController.CreateDirectory(folderName, "/Image/");
             for (int i = 0; i < items.Length; i++)
