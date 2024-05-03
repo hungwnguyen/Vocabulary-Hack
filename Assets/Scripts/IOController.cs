@@ -15,7 +15,6 @@ namespace IO
     {
         public static Folder Folder = new Folder();
         public static string CurrentFolderName = string.Empty;
-
         public static void RenameFolder(string oldName, string newName)
         {
             string oldPath = GetFilePath(oldName);
@@ -56,6 +55,25 @@ namespace IO
             else
             {
                 Debug.Log("Không tìm thấy tệp tin để đổi tên: " + oldName);
+            }
+        }
+
+        public static string GetAudioPath(string textureName)
+        {
+            string path = Application.persistentDataPath + "/Sound/" + CurrentFolderName + "/" + textureName + ".mp3";
+            return File.Exists(path) ? path : string.Empty;
+        }
+        public static void SaveAudioFile(byte[] audioData, string textureName)
+        {
+            CreateDirectory(CurrentFolderName, "/Sound/");
+            string path = Application.persistentDataPath + "/Sound/" + CurrentFolderName + "/" + textureName + ".mp3";
+            try
+            {
+                File.WriteAllBytes(path, audioData);
+            }
+            catch (IOException e)
+            {
+                Debug.Log("Error while saving audio file: " + e.Message);
             }
         }
         public static void SaveData(string folderName)
@@ -183,6 +201,11 @@ namespace IO
             }
         }
 
+        public static void DeleteSound(string fileName)
+        {
+            if (Directory.Exists(Application.persistentDataPath + "/Sound/" + fileName))
+                Directory.Delete(Application.persistentDataPath + "/Sound/" + fileName, true);
+        }
         public static void DeleteFile(string fileName)
         {
             string filePath = GetFilePath(fileName); ;
@@ -201,6 +224,7 @@ namespace IO
                     Folder.name.Remove(fileName);
                     File.Delete(filePath);
                     Directory.Delete(Application.persistentDataPath + "/Image/" + fileName, true);
+                    DeleteSound(fileName);
                     Debug.Log("Đã xóa tệp tin: " + fileName);
                 }
                 catch (IOException e)

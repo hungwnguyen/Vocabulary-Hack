@@ -20,14 +20,15 @@ public class AutoResize : MonoBehaviour
         if (cameraWidth / cameraHeight < rectTransformWidth / rectTransformHeight)
         {
             this.transform.localScale = new Vector3(cameraWidth / rectTransformWidth, cameraWidth / rectTransformWidth, 1);
-        } else
+        }
+        else
         {
             this.transform.localScale = Vector3.one;
         }
     }
 
-    /*private void Update()
+    private void Update()
     {
         AdjustSize();
-    }*/
+    }
 }

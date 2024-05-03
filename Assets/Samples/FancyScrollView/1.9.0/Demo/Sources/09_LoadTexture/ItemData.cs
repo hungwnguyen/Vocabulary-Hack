@@ -16,6 +16,7 @@ namespace FancyScrollView.Example09
         public string type;
         public Texture2D texture;
         public bool isChangeTexture = false;
+        public bool isChangeTranslation = false;
 
 
         public override string ToString()

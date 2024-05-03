@@ -7,35 +7,47 @@ namespace Hungw
 {
     public class GameController : MonoBehaviour
     {
-
-        [SerializeField] private TMP_Text input;
-        [SerializeField] private bool isTest = false;
-
+        public bool isTest = false;
+        public Question question;
+        public static GameController Instance;
         private void Awake()
         {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(this.gameObject);
+            }
+#if UNITY_EDITOR
             if (isTest)
             {
                 IOController.Folder.vocabularies = new Dictionary<string, IO.Vocabulary[]>();
                 IOController.Folder.texture = new Dictionary<string, Texture2D>();
                 IOController.CurrentFolderName = "Test";
                 IOController.ReadData(IOController.CurrentFolderName);
-                GameObject.FindWithTag("Finish").gameObject.SetActive(false);
             }
+#endif
         }
-
-        private void OnEnable()
+        void OnEnable()
         {
-            string result = "";
-            foreach (var v in IOController.Folder.vocabularies[IOController.CurrentFolderName])
-            {
-                result += v.ToString() + " ";
-            }
-            input.text = result;
+            question.Init();
         }
-
         public void LoadScene()
         {
             UIManager.Instance.UnLoadGameScene();
+            UIManager.Instance.bug.text = "";
+        }
+
+        public void PlayClickSound()
+        {
+            SoundManager.CreatePlayFXSound();
+        }
+
+        public void PlayClickSubmitSound()
+        {
+            SoundManager.CreatePlayFXSound(SoundManager.Instance.audioClip.aud_submit);
         }
     }
 }

@@ -37,7 +37,8 @@ namespace Hungw
         [SerializeField] private AutoCompleteScript AutoCompleteScript;
         [SerializeField] private NotificationManager saveData;
         [SerializeField] private CanvasGroup canvas;
-        [SerializeField] private Slider slider;
+        [SerializeField] private Slider slider, sliderFX, sliderBG;
+
         private bool isDelayToSave;
 
         public static UIManager Instance { get; private set; }
@@ -55,6 +56,8 @@ namespace Hungw
             CacheData();
             this._customEvent0.Invoke();
             folderNameEdit.onEndEdit.AddListener(ReNameFolder);
+            sliderFX.onValueChanged.AddListener(ChangeFXMusic);
+            sliderBG.onValueChanged.AddListener(ChangeBGMusic);
         }
         #endregion
 
@@ -98,9 +101,18 @@ namespace Hungw
             canvasGroup.interactable = false;
         }
 
+        public void ChangeBGMusic(float value)
+        {
+            SoundManager.ChangeVolumeBGMusic(value);
+        }
+
+        public void ChangeFXMusic(float value)
+        {
+            SoundManager.ChangeVolumeFXSound(value);
+        }
+
         public void LoadGameScene()
         {
-
             if (SceneManager.sceneCount > 1)
             {
                 CanvasGroup gameCanvas = GameObject.FindWithTag("Canvas").GetComponent<CanvasGroup>();
@@ -137,7 +149,7 @@ namespace Hungw
 
         public void ReNameFolder(String value)
         {
-            if (value.Equals(IOController.CurrentFolderName) || CheckSyntax(value) || CheckOverLap(value))
+            if (value.Equals(IOController.CurrentFolderName) || CheckSyntax(value))
             {
                 return;
             }
@@ -171,14 +183,11 @@ namespace Hungw
             switch (value)
             {
                 case 1:
-                    if (string.IsNullOrEmpty(folderName.text))
-                    {
-                        return;
-                    }
-                    if (CheckSyntax(folderName.text) || CheckOverLap(folderName.text))
+                    if (CheckSyntax(folderName.text))
                     {
                         break;
                     }
+                    CheckOverLap(folderName.text);
                     FancyScrollView.Example09.Example09.Instance.StartCreate();
                     IOController.CurrentFolderName = folderName.text;
                     _customEvent1.Invoke();
@@ -191,6 +200,11 @@ namespace Hungw
                     break;
             }
         }
+
+        // public void DeleteSoundData()
+        // {
+        //     IOController.DeleteSound(IOController.CurrentFolderName);
+        // }
 
         public void SaveFolder(bool isSaveFromAPI = false, Action afterSaveAction = null)
         {
@@ -249,18 +263,20 @@ namespace Hungw
 
         #endregion
         #region Check Methods
-        public bool CheckOverLap(string value)
+        public void CheckOverLap(string value)
         {
-            foreach (string item in IOController.Folder.name)
+            if (IOController.Folder.name.Contains(value))
             {
-                if (item.Equals(value))
+                for (int i = 1; ; i++)
                 {
-                    bug.text = "Tên thư mục đã tồn tại!";
-                    return true;
+                    if (!IOController.Folder.name.Contains(value + $"({i})"))
+                    {
+                        folderName.text = value + $"({i})";
+                        break;
+                    }
                 }
             }
             bug.text = "";
-            return false;
         }
         public bool CheckSyntax(string value)
         {

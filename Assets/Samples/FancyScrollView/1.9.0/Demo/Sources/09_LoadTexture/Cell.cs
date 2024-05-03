@@ -12,7 +12,6 @@ using TMPro;
 using HungwNguyen.MUIP;
 using Hungw;
 using System.Collections;
-using Unity.VisualScripting;
 
 namespace FancyScrollView.Example09
 {
@@ -23,7 +22,7 @@ namespace FancyScrollView.Example09
         [SerializeField] TMP_InputField vocabulary, translation;
         [SerializeField] Image background = default;
         [SerializeField] CanvasGroup canvasGroup = default;
-        [SerializeField] TMP_Text id, type, subVoca;
+        [SerializeField] TMP_Text id, type, subVoca, descriptionVoca, descriptionTrans;
         [SerializeField] RawImage image;
         [SerializeField] private float targetWidth, targetHeight;
         [SerializeField]
@@ -33,6 +32,12 @@ namespace FancyScrollView.Example09
         private bool isDelayPlayMusic = false;
 
         public bool isEdit { get; set; }
+
+        public void SetDescription(string voca, string trans)
+        {
+            descriptionVoca.text = voca;
+            descriptionTrans.text = trans;
+        }
 
         public override void UpdateContent(ItemData itemData)
         {
@@ -59,13 +64,34 @@ namespace FancyScrollView.Example09
             StartCoroutine(DelayEdit());
         }
 
+        public void OnEnditTranslate()
+        {
+            if (translation.text == "") return;
+            ScrollView.Instance.SetTranslation(Index, translation.text);
+        }
+
         IEnumerator DelayEdit()
         {
             yield return new WaitForEndOfFrame();
-            if (APIController.Instance.currentTranslations.ContainsKey(vocabulary.text))
+            if (APIController.Instance.currentTranslation.ContainsKey(vocabulary.text))
             {
-                SetTranslateAndType(APIController.Instance.currentTranslations[vocabulary.text][1],
-                   APIController.Instance.currentTranslations[vocabulary.text][0]);
+                SetTranslation(APIController.Instance.currentTranslation[vocabulary.text]);
+            }
+            else
+            {
+                if (vocabulary.text != "")
+                {
+                    APIController.Instance.GetTranslatetionFromGoogle(vocabulary.text, this);
+                }
+                else
+                {
+                    SetTranslation("");
+                }
+
+            }
+            if (APIController.Instance.currentType.ContainsKey(vocabulary.text))
+            {
+                SetType(APIController.Instance.currentType[vocabulary.text]);
             }
             SetVocabulary();
         }
@@ -96,14 +122,6 @@ namespace FancyScrollView.Example09
             isDelayPlayMusic = false;
         }
 
-        public void SetTranslateAndType(string translate, string type)
-        {
-            this.translation.text = translate;
-            this.type.text = type;
-            SetType();
-            SetTranslation();
-        }
-
         void UpdateText(TMP_InputField input, string content)
         {
             input.text = content;
@@ -116,15 +134,17 @@ namespace FancyScrollView.Example09
             ScrollView.Instance.SetVocabulary(Index, vocabulary.text);
         }
 
-        public void SetTranslation()
+        public void SetTranslation(string translation)
         {
-            if (translation.text == "") return;
-            ScrollView.Instance.SetTranslation(Index, translation.text);
+            if (translation == "") return;
+            this.translation.text = translation;
+            ScrollView.Instance.SetTranslation(Index, translation);
         }
 
-        public void SetType()
+        public void SetType(string type)
         {
-            ScrollView.Instance.SetType(Index, type.text);
+            this.type.text = type;
+            ScrollView.Instance.SetType(Index, this.type.text);
         }
 
         private void SetTexture(Texture2D input)

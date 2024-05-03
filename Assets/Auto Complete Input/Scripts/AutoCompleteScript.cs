@@ -4,6 +4,7 @@ using IO;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using Hungw;
 
 [Serializable]
 public class PotentialPrompts
@@ -198,21 +199,17 @@ public class AutoCompleteScript : MonoBehaviour
             subInput.text = "";
         }
     }
-
+    void OnDisable()
+    {
+        StopAllCoroutines();
+    }
 
     public void OnEndEdit()
     {
-        try
-        {
-            StartCoroutine(DelayEdit());
-        }
-        catch (Exception e)
-        {
-            Debug.Log(e.Message);
-        }
+        StartCoroutine(DelayedEndEdit());
     }
 
-    IEnumerator DelayEdit()
+    IEnumerator DelayedEndEdit()
     {
         yield return new WaitForEndOfFrame();
         if (defaultPromt.gameObject.activeSelf)
@@ -221,17 +218,19 @@ public class AutoCompleteScript : MonoBehaviour
         }
         else if (openFolder)
         {
-            StartCoroutine(IOController.OpenFolderRecent(inputField.text));
+            if (IOController.Folder.vocabularies.ContainsKey(inputField.text))
+            {
+                StartCoroutine(IOController.OpenFolderRecent(inputField.text));
+            }
+            else
+            {
+                UIManager.Instance.bug.text = "Tên thư mục không tồn tại!";
+            }
         }
     }
 
     int Comparator(PromptTag first, PromptTag second)
     {
         return first.ID > second.ID ? -1 : 1;
-    }
-
-    int ComparatorPrompt(PotentialPrompts first, PotentialPrompts second)
-    {
-        return first.overlapValue > second.overlapValue ? -1 : 1;
     }
 }

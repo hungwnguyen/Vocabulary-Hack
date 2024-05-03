@@ -8,6 +8,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using IO;
+using Hungw;
 
 namespace FancyScrollView.Example09
 {
@@ -46,7 +47,10 @@ namespace FancyScrollView.Example09
             ItemsSource[index].isChangeTexture = true;
         }
 
-        public void SetVocabulary(int index, string vocabulary) => ItemsSource[index].vocabularyName = RemoveExtraSpaces(vocabulary);
+        public void SetVocabulary(int index, string vocabulary)
+        {
+            ItemsSource[index].vocabularyName = RemoveExtraSpaces(vocabulary);
+        }
 
         public void SetTranslation(int index, string translation) => ItemsSource[index].translation = RemoveExtraSpaces(translation);
 
@@ -57,31 +61,45 @@ namespace FancyScrollView.Example09
             return ItemsSource.ToArray();
         }
 
+        public void SetCurrentItemChangeTranslation(int index, bool isChangeTranslation)
+        {
+            ItemsSource[index].isChangeTranslation = isChangeTranslation;
+        }
+
         public string CheckExeptionAndSave(string folderName, bool isSaveFromAPi)
         {
             ItemData[] items = GetItemsSource();
-            for (int i = 0; i < items.Length; i++)
+            if (!isSaveFromAPi)
             {
-                if (items[i].translation.Equals("") || items[i].vocabularyName.Equals(""))
+                for (int i = 0; i < items.Length; i++)
                 {
-                    scroller.ScrollTo(i, scrollOffset);
-                    return "Cần điền đầy đủ thông tin";
-                }
-                for (int j = i + 1; j < items.Length; j++)
-                {
-                    if (items[i].vocabularyName.Equals(items[j].vocabularyName))
+                    if (items[i].translation.Equals("") || items[i].vocabularyName.Equals(""))
                     {
-                        scroller.ScrollTo(j, scrollOffset);
-                        this.timer = Time.time;
-                        return "Từ vừa nhập bị trùng tên";
+                        scroller.ScrollTo(i, scrollOffset);
+                        return "Cần điền đầy đủ thông tin";
+                    }
+                    for (int j = i + 1; j < items.Length; j++)
+                    {
+                        if (items[i].vocabularyName.Equals(items[j].vocabularyName))
+                        {
+                            scroller.ScrollTo(j, scrollOffset);
+                            this.timer = Time.time;
+                            return "Từ vừa nhập bị trùng tên";
+                        }
+                    }
+                    if (items[i].isChangeTranslation)
+                    {
+                        string c = items[i].translation;
+                        items[i].translation = items[i].vocabularyName;
+                        items[i].vocabularyName = c;
                     }
                 }
+                if (!IOController.Folder.name.Contains(folderName))
+                {
+                    IOController.Folder.vocabularies[folderName] = new IO.Vocabulary[0];
+                }
             }
-            if (!IOController.Folder.name.Contains(folderName))
-            {
-                IOController.Folder.vocabularies[folderName] = new Vocabulary[0];
-            }
-            Vocabulary[] current = new Vocabulary[items.Length];
+            IO.Vocabulary[] current = new IO.Vocabulary[items.Length];
             IOController.CreateDirectory(folderName, "/Image/");
             for (int i = 0; i < items.Length; i++)
             {
@@ -98,7 +116,6 @@ namespace FancyScrollView.Example09
                 {
                     if (!IOController.Folder.texture.ContainsKey(key))
                     {
-                        Debug.Log(key);
                         IOController.Folder.texture[key] = null;
                     }
                     else if (IOController.Folder.texture[key] != null)
@@ -116,11 +133,13 @@ namespace FancyScrollView.Example09
                     else
                     {
                         IOController.Folder.texture[key] = null;
-
                     }
                 }
             }
-            IOController.Folder.vocabularies[folderName] = current;
+            if (!isSaveFromAPi)
+            {
+                IOController.Folder.vocabularies[folderName] = current;
+            }
             IOController.SaveData(folderName);
             return null;
         }

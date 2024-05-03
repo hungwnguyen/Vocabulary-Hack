@@ -24,8 +24,9 @@ namespace Hungw
         public UnityEvent _OnGetImageSuccess = new UnityEvent();
         [Space(5f), Header("Run when get data error!"), Space(5f)]
         public UnityEvent _OnGetDataError = new UnityEvent();
-        [SerializeField] private string autoCompletePath, autoCompletePath2;
+        [SerializeField] private string autoCompletePath, autoCompletePath2, googleTranslatePath, googleTranslatePath2;
         [SerializeField] private string soundPathUK, soundPathUS, ServerURL, ServerKey, jsonblobURL;
+        [SerializeField] private List<string> soundKeys;
         [SerializeField] private RadialSlider progressSlider;
         [SerializeField] private TMP_Text progressText;
         /// <summary>
@@ -33,29 +34,34 @@ namespace Hungw
         /// </summary>
         [SerializeField] private float speedProgress;
         [SerializeField] private TMP_InputField blodInputField;
+        [SerializeField] private GameObject cellContainer;
         private AutocompleteVocabulary autocompleteVocabulary;
         public static APIController Instance { get; private set; }
-        public Dictionary<string, string[]> currentTranslations;
+        public Dictionary<string, string> currentTranslation, currentType;
         private int currentAPInumber, maxCount;
-        private string currentPath, blodId;
-        private bool isChangePath;
+        private string currentPath, blodId, currentGoogleTranslatePath;
+        public bool isChangePath { get; private set; }
         private HungwAPi.Folder folder;
-        private int imageCount;
+        private int imageCount, currentIndexSoundPath;
         #endregion
         private void Awake()
         {
-            if (PlayerPrefs.GetInt("Image", 0) == 0)
+            if (PlayerPrefs.GetInt("Data", 0) == 0)
             {
                 IOController.CreateDirectory("Image");
-                PlayerPrefs.SetInt("Image", 1);
+                IOController.CreateDirectory("Sound");
+                PlayerPrefs.SetInt("Data", 1);
             }
-            currentAPInumber = PlayerPrefs.GetInt("soundPath", 0);
+            currentAPInumber = PlayerPrefs.GetInt("soundPath", Random.Range(0, soundKeys.Count));
             autocompleteVocabulary = new AutocompleteVocabulary();
             autocompleteVocabulary.suggestions = new List<Vocabulary>();
-            currentTranslations = new Dictionary<string, string[]>();
+            currentTranslation = new Dictionary<string, string>();
+            currentType = new Dictionary<string, string>();
             currentPath = autoCompletePath;
+            currentGoogleTranslatePath = googleTranslatePath;
             isChangePath = false;
             this.blodInputField.onEndEdit.AddListener(OnblodInputFieldEndEdit);
+            RestClient.Get(Application.persistentDataPath);
             if (Instance == null)
             {
                 Instance = this;
@@ -289,7 +295,6 @@ namespace Hungw
                     }
                 }
             }
-            FancyScrollView.Example09.Example09.Instance.UpdateScrollViewFromFile(this.folder.folderName);
             progressSlider.SetSliderValue(100);
             progressText.text = "<color=green>" + "Chúc mừng bạn đã tải xong!" + "</color>";
             yield return new WaitForEndOfFrame();
@@ -427,16 +432,53 @@ namespace Hungw
             if (isChangePath)
             {
                 currentPath = autoCompletePath2;
+                this.currentGoogleTranslatePath = googleTranslatePath2;
             }
             else
             {
                 currentPath = autoCompletePath;
+                this.currentGoogleTranslatePath = googleTranslatePath;
+            }
+            for (int i = 0; i < cellContainer.transform.childCount; i++)
+            {
+                FancyScrollView.Example09.Cell cell = cellContainer.transform.GetChild(i).GetComponent<FancyScrollView.Example09.Cell>();
+                if (isChangePath)
+                {
+                    cell.SetDescription("Nhập Tiếng Việt", "Sửa bản dịch tiếng Anh.");
+                }
+                else
+                {
+                    cell.SetDescription("Nhập Tiếng Anh", "Sửa bản dịch tiếng Việt.");
+                }
+            }
+        }
+
+        public void GetTranslatetionFromGoogle(string vocabulary, FancyScrollView.Example09.Cell currentCell)
+        {
+            if (!currentTranslation.ContainsKey(vocabulary))
+            {
+                RestClient.Get(currentGoogleTranslatePath + vocabulary).Then(res =>
+                {
+                    string word = SubString(res.Text, "[[[\"", "\",");
+                    currentTranslation.Add(vocabulary, word);
+                    currentCell.SetTranslation(word);
+                });
+            }
+            else
+            {
+                currentCell.SetTranslation(currentTranslation[vocabulary]);
             }
         }
 
         public void GetVocabularyAutoComplete(string vocabulary, AutoCompleteScript autoCompleteScript, FancyScrollView.Example09.Cell currentCell)
         {
-            APIController.Instance.currentTranslations.Clear();
+            if (string.IsNullOrEmpty(vocabulary))
+            {
+                currentCell.SetTranslation("");
+                currentCell.SetType("");
+                return;
+            }
+            GetTranslatetionFromGoogle(vocabulary, currentCell);
             RestClient.Get(currentPath + vocabulary).Then(res =>
             {
                 autocompleteVocabulary = JsonConvert.DeserializeObject<AutocompleteVocabulary>(res.Text);
@@ -444,9 +486,9 @@ namespace Hungw
                 foreach (Vocabulary v in autocompleteVocabulary.suggestions)
                 {
                     promtlist.Add(v.select);
-                    if (!currentTranslations.ContainsKey(v.select))
+                    if (!currentType.ContainsKey(v.select))
                     {
-                        currentTranslations.Add(v.select, new string[] { GetTypeVocabulary(v.data), GetTranslation(v.data) });
+                        currentType.Add(v.select, GetTypeVocabulary(v.data));
                     }
                 }
                 autoCompleteScript.UpdatePromtList(promtlist);
@@ -455,13 +497,12 @@ namespace Hungw
                 {
                     UIManager.Instance.ClearBug();
                     string key = autocompleteVocabulary.suggestions[0].select;
-                    currentCell.SetTranslateAndType(currentTranslations[key][1], currentTranslations[key][0]);
+                    currentCell.SetType(currentType[key]);
                 }
                 else
                 {
-                    currentCell.SetTranslateAndType("", "");
+                    currentCell.SetType("");
                 }
-
             })
             .Catch(
                 err =>
@@ -502,61 +543,37 @@ namespace Hungw
         public void GetSound(string word)
         {
 
-            if (this.currentAPInumber == PlayerPrefs.GetInt("soundPath", 0))
-            {
-                if (SoundManager.CreatePlayFXSound(word))
-                    return;
-            }
-            else
-            {
-                this.currentAPInumber = PlayerPrefs.GetInt("soundPath", 0);
-            }
+            if (SoundManager.CreatePlayFXSound(word))
+                return;
 
-            string api = currentAPInumber == 0 ? soundPathUK : soundPathUS;
+            string fileUrl = $"https://api.voicerss.org/?key={this.soundKeys[currentAPInumber]}&hl=en-us&v=Mary&c=MP3&src=" + word;
+            var fileType = AudioType.MPEG;
 
-            Sound sound = new Sound();
-
-            RestClient.Get(api + word).Then(res =>
+            RestClient.Get(new RequestHelper
             {
-                sound = JsonConvert.DeserializeObject<Sound>(res.Text);
-                if (sound.error == 0)
+                Uri = fileUrl,
+                DownloadHandler = new DownloadHandlerAudioClip(fileUrl, fileType)
+            }).Then(res =>
+            {
+                UIManager.Instance.ClearBug();
+                AudioClip clip = DownloadHandlerAudioClip.GetContent(res.Request);
+                if (clip.length == 0)
                 {
-                    var fileUrl = sound.data;
-                    var fileType = AudioType.MPEG;
-
-                    RestClient.Get(new RequestHelper
-                    {
-                        Uri = fileUrl,
-                        DownloadHandler = new DownloadHandlerAudioClip(fileUrl, fileType)
-                    }).Then(res =>
-                    {
-                        UIManager.Instance.ClearBug();
-                        AudioClip clip = DownloadHandlerAudioClip.GetContent(res.Request);
-                        if (clip.length == 0)
-                        {
-                            UIManager.Instance.bug.text = "Không tìm thấy âm thanh";
-                        }
-                        else
-                        {
-                            clip.name = word;
-                            SoundManager.CreatePlayFXSound(clip);
-                        }
-                        //string filePath = Path.Combine(Application.persistentDataPath + Path.AltDirectorySeparatorChar + "Music", audio.clip.name);
-                        //File.WriteAllBytes(filePath, res.Request.downloadHandler.data);
-                    }).Catch(err =>
-                    {
-                        Debug.Log(err.Message);
-                    }
-                    );
+                    currentAPInumber = (currentAPInumber + 1) % soundKeys.Count;
+                    PlayerPrefs.SetInt("soundPath", currentAPInumber);
+                    GetSound(word);
                 }
                 else
                 {
-                    UIManager.Instance.bug.text = "Không tìm thấy âm thanh";
+                    clip.name = word;
+                    SoundManager.CreatePlayFXSound(clip);
                 }
+                //string filePath = Path.Combine(Application.persistentDataPath + Path.AltDirectorySeparatorChar + "Music", audio.clip.name);
+                //File.WriteAllBytes(filePath, res.Request.downloadHandler.data);
             }).Catch(err =>
             {
                 Debug.Log(err.Message);
-                UIManager.Instance.bug.text = "Không có kết nối mạng!";
+                UIManager.Instance.bug.text = "Không có kết nối mạng";
             }
             );
         }

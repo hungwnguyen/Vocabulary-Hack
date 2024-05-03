@@ -37,6 +37,7 @@ public class SoundManager : MonoBehaviour
         fx = PlayerPrefs.GetFloat("fx", 1);
         bg = PlayerPrefs.GetFloat("bg", 1);
         CreateUISound();
+        CreatePlayBgMusic(audioClip.aud_bg);
     }
 
     #region Create GameObject Music
@@ -108,16 +109,13 @@ public class SoundManager : MonoBehaviour
 
     private void PlayBgMusic(AudioClip aClip)
     {
-        if (bg > 0)
+        Instance.BgMusic[aClip.name].gameObject.SetActive(true);
+        Instance.BgMusic[aClip.name].volume = bg;
+        if (!Instance.BgMusic[aClip.name].isPlaying)
+            Instance.BgMusic[aClip.name].Play();
+        if (Time.timeScale == 0)
         {
-            Instance.BgMusic[aClip.name].gameObject.SetActive(true);
-            Instance.BgMusic[aClip.name].volume = bg;
-            if (!Instance.BgMusic[aClip.name].isPlaying)
-                Instance.BgMusic[aClip.name].Play();
-            if (Time.timeScale == 0)
-            {
-                Instance.BgMusic[aClip.name].Pause();
-            }
+            Instance.BgMusic[aClip.name].Pause();
         }
     }
 
@@ -346,6 +344,7 @@ public class SoundManager : MonoBehaviour
 
     public static void ChangeVolumeBGMusic(float value)
     {
+        if (_instance == null) return;
         PlayerPrefs.SetFloat("bg", value);
         _instance.bg = value;
         foreach (AudioSource audioSource in _instance.BgMusic.Values)
@@ -356,6 +355,7 @@ public class SoundManager : MonoBehaviour
 
     public static void ChangeVolumeFXSound(float value)
     {
+        if (_instance == null) return;
         PlayerPrefs.SetFloat("fx", value);
         _instance.fx = value;
         _instance.UI.volume = value;

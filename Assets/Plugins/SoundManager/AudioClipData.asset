@@ -12,4 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3085638a4692d0d47ad34400895d78f3, type: 3}
   m_Name: AudioClipData
   m_EditorClassIdentifier: 
-  aud_touch: {fileID: 8300000, guid: da24a7fe1dab72e429f2ad1a446e0a14, type: 3}
+  aud_touch: {fileID: 8300000, guid: 4ff7f22ec123c4d25a5f6d15ca3f9e26, type: 3}
+  aud_bg: {fileID: 8300000, guid: d908e625c6c6c482f95f3dd405da2969, type: 3}
+  aud_wrong: {fileID: 8300000, guid: 3f952abb650bc4950b5168fca38850f7, type: 3}
+  aud_correct: {fileID: 8300000, guid: 98251bdd47ba14c28b5360220c5725ae, type: 3}
+  aud_win: {fileID: 8300000, guid: edc6f3b9feaae4edda864de7e2f5a725, type: 3}
+  aud_submit: {fileID: 8300000, guid: 3f6feabce6b704d86b3bb9304a0fa76a, type: 3}

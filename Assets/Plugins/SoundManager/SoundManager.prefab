@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62566de4b58cfa74baca44428737dfe2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioClip: {fileID: 11400000, guid: 0f5cdb223e9c8374ab831ab389b32e90, type: 2}
+  audioClip: {fileID: 11400000, guid: 0b055fb3325880b4ab3666244bdc36bb, type: 2}
   BGMusic: {fileID: 4074728207861269852}
   FXSound: {fileID: 7699793885734822212}
   fx: 0
