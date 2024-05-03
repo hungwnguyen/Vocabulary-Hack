@@ -27,8 +27,8 @@ public class AutoResize : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        AdjustSize();
-    }
+    // private void Update()
+    // {
+    //     AdjustSize();
+    // }
 }

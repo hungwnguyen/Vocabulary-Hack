@@ -10,6 +10,7 @@ using System.Collections;
 using HungwNguyen.MUIP;
 using UnityEngine.Events;
 using TMPro;
+using UnityEngine.UI;
 
 namespace Hungw
 {
@@ -29,6 +30,7 @@ namespace Hungw
         [SerializeField] private List<string> soundKeys;
         [SerializeField] private RadialSlider progressSlider;
         [SerializeField] private TMP_Text progressText;
+        [SerializeField] private Toggle voiceToggleMale, voiceToggleFemale;
         /// <summary>
         /// The speed progress of the API controller.
         /// </summary>
@@ -42,7 +44,8 @@ namespace Hungw
         private string currentPath, blodId, currentGoogleTranslatePath;
         public bool isChangePath { get; private set; }
         private HungwAPi.Folder folder;
-        private int imageCount, currentIndexSoundPath;
+        private int imageCount;
+        private string currentVoid;
         #endregion
         private void Awake()
         {
@@ -52,7 +55,8 @@ namespace Hungw
                 IOController.CreateDirectory("Sound");
                 PlayerPrefs.SetInt("Data", 1);
             }
-            currentAPInumber = PlayerPrefs.GetInt("soundPath", Random.Range(0, soundKeys.Count));
+            //currentAPInumber = PlayerPrefs.GetInt("soundPath", Random.Range(0, soundKeys.Count));
+            currentAPInumber = PlayerPrefs.GetInt("soundPath", 0);
             autocompleteVocabulary = new AutocompleteVocabulary();
             autocompleteVocabulary.suggestions = new List<Vocabulary>();
             currentTranslation = new Dictionary<string, string>();
@@ -70,6 +74,15 @@ namespace Hungw
             else
             {
                 Destroy(gameObject);
+            }
+            this.currentVoid = PlayerPrefs.GetString("void", "John");
+            if (!currentVoid.Equals("John"))
+            {
+                voiceToggleFemale.isOn = true;
+            }
+            else
+            {
+                voiceToggleFemale.isOn = false;
             }
         }
 
@@ -295,6 +308,7 @@ namespace Hungw
                     }
                 }
             }
+            FancyScrollView.Example09.Example09.Instance.UpdateScrollViewFromFile(this.folder.folderName);
             progressSlider.SetSliderValue(100);
             progressText.text = "<color=green>" + "Chúc mừng bạn đã tải xong!" + "</color>";
             yield return new WaitForEndOfFrame();
@@ -540,43 +554,116 @@ namespace Hungw
             return SubString(input, "></div><p>", "</p></a>");
         }
 
+        public void SetVoid()
+        {
+            if (voiceToggleFemale.isOn)
+            {
+                SetVoid("Mary");
+            }
+            else
+            {
+                SetVoid("John");
+            }
+        }
+
+        private void SetVoid(string name)
+        {
+            this.currentVoid = name;
+            PlayerPrefs.SetString("void", name);
+        }
+
         public void GetSound(string word)
         {
 
             if (SoundManager.CreatePlayFXSound(word))
                 return;
 
-            string fileUrl = $"https://api.voicerss.org/?key={this.soundKeys[currentAPInumber]}&hl=en-us&v=Mary&c=MP3&src=" + word;
-            var fileType = AudioType.MPEG;
+            string api = this.currentVoid.Equals("John") ? soundPathUK : soundPathUS;
 
-            RestClient.Get(new RequestHelper
+            Sound sound = new Sound();
+
+            RestClient.Get(api + word).Then(res =>
             {
-                Uri = fileUrl,
-                DownloadHandler = new DownloadHandlerAudioClip(fileUrl, fileType)
-            }).Then(res =>
-            {
-                UIManager.Instance.ClearBug();
-                AudioClip clip = DownloadHandlerAudioClip.GetContent(res.Request);
-                if (clip.length == 0)
+                sound = JsonConvert.DeserializeObject<Sound>(res.Text);
+                if (sound.error == 0)
                 {
-                    currentAPInumber = (currentAPInumber + 1) % soundKeys.Count;
-                    PlayerPrefs.SetInt("soundPath", currentAPInumber);
-                    GetSound(word);
+                    var fileUrl = sound.data;
+                    var fileType = AudioType.MPEG;
+
+                    RestClient.Get(new RequestHelper
+                    {
+                        Uri = fileUrl,
+                        DownloadHandler = new DownloadHandlerAudioClip(fileUrl, fileType)
+                    }).Then(res =>
+                    {
+                        UIManager.Instance.ClearBug();
+                        AudioClip clip = DownloadHandlerAudioClip.GetContent(res.Request);
+                        if (clip.length == 0)
+                        {
+                            UIManager.Instance.bug.text = "Không tìm thấy âm thanh";
+                        }
+                        else
+                        {
+                            clip.name = word;
+                            SoundManager.CreatePlayFXSound(clip);
+                        }
+                        //string filePath = Path.Combine(Application.persistentDataPath + Path.AltDirectorySeparatorChar + "Music", audio.clip.name);
+                        //File.WriteAllBytes(filePath, res.Request.downloadHandler.data);
+                    }).Catch(err =>
+                    {
+                        Debug.Log(err.Message);
+                    }
+                    );
                 }
                 else
                 {
-                    clip.name = word;
-                    SoundManager.CreatePlayFXSound(clip);
+                    UIManager.Instance.bug.text = "Không tìm thấy âm thanh";
                 }
-                //string filePath = Path.Combine(Application.persistentDataPath + Path.AltDirectorySeparatorChar + "Music", audio.clip.name);
-                //File.WriteAllBytes(filePath, res.Request.downloadHandler.data);
             }).Catch(err =>
             {
                 Debug.Log(err.Message);
-                UIManager.Instance.bug.text = "Không có kết nối mạng";
+                UIManager.Instance.bug.text = "Không có kết nối mạng!";
             }
             );
         }
+
+        // public void GetSound(string word)
+        // {
+
+        //     if (SoundManager.CreatePlayFXSound(word))
+        //         return;
+
+        //     string fileUrl = $"https://api.voicerss.org/?key={this.soundKeys[currentAPInumber]}&hl=en-us&v={this.currentVoid}&c=MP3&src=" + word;
+        //     var fileType = AudioType.MPEG;
+
+        //     RestClient.Get(new RequestHelper
+        //     {
+        //         Uri = fileUrl,
+        //         DownloadHandler = new DownloadHandlerAudioClip(fileUrl, fileType)
+        //     }).Then(res =>
+        //     {
+        //         UIManager.Instance.ClearBug();
+        //         AudioClip clip = DownloadHandlerAudioClip.GetContent(res.Request);
+        //         if (clip.length == 0)
+        //         {
+        //             currentAPInumber = (currentAPInumber + 1) % soundKeys.Count;
+        //             PlayerPrefs.SetInt("soundPath", currentAPInumber);
+        //             GetSound(word);
+        //         }
+        //         else
+        //         {
+        //             clip.name = word;
+        //             SoundManager.CreatePlayFXSound(clip);
+        //         }
+        //         //string filePath = Path.Combine(Application.persistentDataPath + Path.AltDirectorySeparatorChar + "Music", audio.clip.name);
+        //         //File.WriteAllBytes(filePath, res.Request.downloadHandler.data);
+        //     }).Catch(err =>
+        //     {
+        //         Debug.Log(err.Message);
+        //         UIManager.Instance.bug.text = "Không có kết nối mạng";
+        //     }
+        //     );
+        // }
     }
 
     public class AutocompleteVocabulary

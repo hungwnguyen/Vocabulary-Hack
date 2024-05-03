@@ -36,40 +36,14 @@ namespace HungwNguyen.MUIP
 
         public void UpdateState()
         {
-            if (gameObject.activeInHierarchy == true) 
-            { 
-                StopCoroutine("DisableAnimator"); 
-                StartCoroutine("DisableAnimator"); 
-            }
-
-            else { return; }
-
-            toggleAnimator.enabled = true;
-
             if (toggleObject.isOn) { toggleAnimator.Play("On Instant"); }
             else { toggleAnimator.Play("Off Instant"); }
         }
 
         public void UpdateState(bool value)
         {
-            if (gameObject.activeInHierarchy == true)
-            {
-                StopCoroutine("DisableAnimator");
-                StartCoroutine("DisableAnimator");
-            }
-
-            else { return; }
-
-            toggleAnimator.enabled = true;
-
             if (toggleObject.isOn) { toggleAnimator.Play("Toggle On"); }
             else { toggleAnimator.Play("Toggle Off"); }
-        }
-
-        IEnumerator DisableAnimator()
-        {
-            yield return new WaitForSecondsRealtime(0.6f);
-            toggleAnimator.enabled = false;
         }
     }
 }
