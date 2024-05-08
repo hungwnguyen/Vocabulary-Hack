@@ -9,6 +9,7 @@ using IO;
 using UnityEngine.SceneManagement;
 using HungwNguyen.MUIP;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace Hungw
 {
@@ -38,7 +39,9 @@ namespace Hungw
         [SerializeField] private NotificationManager saveData;
         [SerializeField] private CanvasGroup canvas;
         [SerializeField] private Slider slider, sliderFX, sliderBG;
-
+#if UNITY_EDITOR
+        [SerializeField] private bool isTest;
+#endif
         private bool isDelayToSave;
 
         public static UIManager Instance { get; private set; }
@@ -47,6 +50,11 @@ namespace Hungw
         #region MonoBehaviour Callbacks
         private void Awake()
         {
+            if (PlayerPrefs.GetInt("Data", 0) == 0)
+            {
+                IOController.CreateDirectory("Image");
+                PlayerPrefs.SetInt("Data", 1);
+            }
             IOController.Folder.name = IOController.GetAllFileNames();
             AutoCompleteScript.UpdatePromtList(IOController.Folder.name);
             IOController.Folder.vocabularies = new Dictionary<string, IO.Vocabulary[]>();
@@ -58,9 +66,29 @@ namespace Hungw
             folderNameEdit.onEndEdit.AddListener(ReNameFolder);
             sliderFX.onValueChanged.AddListener(ChangeFXMusic);
             sliderBG.onValueChanged.AddListener(ChangeBGMusic);
+            if (PlayerPrefs.GetInt("IsLoadData", 0) == 0)
+            {
+                PlayerPrefs.SetInt("IsLoadData", 1);
+                UploadDefaultData();
+            }
+#if UNITY_EDITOR
+            if (isTest)
+            {
+                UploadDefaultData();
+            }
+#endif
         }
         #endregion
-
+        private void UploadDefaultData()
+        {
+            string[] json = Resources.LoadAll<TextAsset>("DefaultData").Select(x => x.text).ToArray();
+            for (int i = 0; i < json.Length; i++)
+            {
+                APIController.Instance.ConvertData(json[i]);
+                IOController.SaveData(APIController.Instance.folder.folderName);
+                IOController.Folder.name.Add(APIController.Instance.folder.folderName);
+            }
+        }
         #region Unity Events
 
         public void IncreaseScrollView09()

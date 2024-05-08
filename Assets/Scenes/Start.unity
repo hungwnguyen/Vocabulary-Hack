@@ -12223,7 +12223,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 497555484}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -17718,7 +17718,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 686393640}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -24685,6 +24685,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 2094388793}
+        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
+        m_MethodName: Play
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: Fade-out
+          m_BoolArgument: 0
+        m_CallState: 2
   onDoubleClick:
     m_PersistentCalls:
       m_Calls: []
@@ -29178,6 +29190,18 @@ MonoBehaviour:
           m_StringArgument: appear
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 610195426}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: appear
+          m_BoolArgument: 0
+        m_CallState: 2
   _OnGetImageSuccess:
     m_PersistentCalls:
       m_Calls:
@@ -29598,6 +29622,7 @@ GameObject:
   - component: {fileID: 1140059679}
   - component: {fileID: 1140059680}
   - component: {fileID: 1140059681}
+  - component: {fileID: 1140059682}
   m_Layer: 5
   m_Name: Toggle Group Panel
   m_TagString: Untagged
@@ -29665,6 +29690,23 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1140059682
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1140059678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls: []
 --- !u!1 &1143827170
 GameObject:
   m_ObjectHideFlags: 0
@@ -31188,6 +31230,7 @@ GameObject:
   - component: {fileID: 1232834464}
   - component: {fileID: 1232834463}
   - component: {fileID: 1232834462}
+  - component: {fileID: 1232834467}
   m_Layer: 5
   m_Name: Toggle
   m_TagString: Untagged
@@ -31351,6 +31394,35 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1232834460}
   m_CullTransparentMesh: 0
+--- !u!114 &1232834467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1232834460}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1860615693}
+          m_TargetAssemblyTypeName: Hungw.UIManager, Assembly-CSharp
+          m_MethodName: PlayAudioClick
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &1234111707
 GameObject:
   m_ObjectHideFlags: 0
@@ -45199,6 +45271,7 @@ MonoBehaviour:
   slider: {fileID: 1393303284}
   sliderFX: {fileID: 1234111708}
   sliderBG: {fileID: 2068312947}
+  isTest: 0
 --- !u!4 &1860615694
 Transform:
   m_ObjectHideFlags: 0
@@ -46574,7 +46647,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1911917335}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -52838,6 +52911,7 @@ GameObject:
   - component: {fileID: 2131810404}
   - component: {fileID: 2131810403}
   - component: {fileID: 2131810402}
+  - component: {fileID: 2131810407}
   m_Layer: 5
   m_Name: Toggle (1)
   m_TagString: Untagged
@@ -52979,7 +53053,19 @@ MonoBehaviour:
   m_Group: {fileID: 1140059680}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1130625601}
+        m_TargetAssemblyTypeName: Hungw.APIController, Assembly-CSharp
+        m_MethodName: SetVoid
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_IsOn: 0
 --- !u!222 &2131810406
 CanvasRenderer:
@@ -52989,6 +53075,35 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2131810400}
   m_CullTransparentMesh: 0
+--- !u!114 &2131810407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2131810400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1860615693}
+          m_TargetAssemblyTypeName: Hungw.UIManager, Assembly-CSharp
+          m_MethodName: PlayAudioClick
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &2138419515
 GameObject:
   m_ObjectHideFlags: 0

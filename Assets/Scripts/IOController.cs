@@ -7,6 +7,7 @@ using System.Linq;
 using FancyScrollView.Example09;
 using System.Collections;
 using Hungw;
+using Unity.VisualScripting;
 
 
 namespace IO
@@ -112,13 +113,9 @@ namespace IO
                     foreach (Vocabulary v in Folder.vocabularies[folderName])
                     {
                         string key = folderName + v.vocabularyName;
-                        if (!string.IsNullOrEmpty(v.texturePath))
+                        if (!string.IsNullOrEmpty(v.texturePath) && CheckFolderImage(v.vocabularyName, folderName))
                         {
                             Folder.texture[key] = GetTexture2D(v.vocabularyName, folderName);
-                        }
-                        else
-                        {
-                            Folder.texture[key] = null;
                         }
                     }
                 }
@@ -130,28 +127,26 @@ namespace IO
             }
         }
 
+        private static bool CheckFolderImage(string textureName, string folderName)
+        {
+            string path = Application.persistentDataPath + "/Image/" + folderName + "/" + textureName + ".jpg";
+            return File.Exists(path);
+        }
+
         public static Texture2D GetTexture2D(string textureName, string folderName)
         {
             string path = Application.persistentDataPath + "/Image/" + folderName + "/" + textureName + ".jpg";
-            try
-            {
-                byte[] imageData = File.ReadAllBytes(path); // Đọc dữ liệu từ tệp
-                Texture2D texture = new Texture2D(2, 2); // Tạo một Texture2D mới
+            byte[] imageData = File.ReadAllBytes(path); // Đọc dữ liệu từ tệp
+            Texture2D texture = new Texture2D(2, 2); // Tạo một Texture2D mới
 
-                // Load ảnh từ mảng byte
-                if (texture.LoadImage(imageData))
-                {
-                    return texture;
-                }
-                else
-                {
-                    Debug.LogError("Failed to load texture from file: " + path);
-                    return null;
-                }
-            }
-            catch (FileNotFoundException e)
+            // Load ảnh từ mảng byte
+            if (texture.LoadImage(imageData))
             {
-                Debug.LogError(e.Message);
+                return texture;
+            }
+            else
+            {
+                Debug.LogError("Failed to load texture from file: " + path);
                 return null;
             }
         }
@@ -246,10 +241,21 @@ namespace IO
                 yield return new WaitForEndOfFrame();
             }
             if (!Folder.vocabularies.ContainsKey(folderName)) yield break;
-            FancyScrollView.Example09.Example09.Instance.UpdateScrollViewFromFile(folderName);
-            UIManager.Instance.ClickFolder(folderName);
             UIManager.Instance.bug.text = "";
             CurrentFolderName = folderName;
+            UIManager.Instance.ClickFolder(folderName);
+            foreach (Vocabulary voca in Folder.vocabularies[folderName])
+            {
+                if (!string.IsNullOrEmpty(voca.texturePath) && voca.texturePath != ".")
+                {
+                    if (!CheckFolderImage(voca.vocabularyName, folderName))
+                    {
+                        APIController.Instance.OnGetJsonBlobComplete(true);
+                        yield break;
+                    }
+                }
+            }
+            Example09.Instance.UpdateScrollViewFromFile(folderName);
         }
     }
 

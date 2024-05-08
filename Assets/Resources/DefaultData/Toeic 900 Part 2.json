@@ -1,0 +1,53 @@
+{
+    "folderName": "Toeic 900 Part 2",
+    "vocabularies": [
+        {
+            "vocabularyName": "attendance",
+            "translation": "(n)sự tham dự (đi với record là bảng điểm danh)",
+            "type": "/ə'tendəns/",
+            "texturePath": "https://iili.io/Jrdwa5l.jpg"
+        },
+        {
+            "vocabularyName": "attend",
+            "translation": "tham gia",
+            "type": "/ə'tend/",
+            "texturePath": "https://iili.io/JrdwlbS.jpg"
+        },
+        {
+            "vocabularyName": "attendee",
+            "translation": "người tham dự",
+            "type": "/əˌtɛnˈdiː/",
+            "texturePath": "https://iili.io/Jrdwce2.jpg"
+        },
+        {
+            "vocabularyName": "interest",
+            "translation": "quan tâm(n); danh từ này đi với rate là lãi suất",
+            "type": "/'intrəst/",
+            "texturePath": "https://iili.io/JrdwAfs.jpg"
+        },
+        {
+            "vocabularyName": "interested",
+            "translation": "thú vị (adj)",
+            "type": "/'intrəstid/",
+            "texturePath": "https://iili.io/JrdwR0G.jpg"
+        },
+        {
+            "vocabularyName": "applicant",
+            "translation": "người xin việc",
+            "type": "/'æplikənt/",
+            "texturePath": "https://iili.io/Jrdw1z7.jpg"
+        },
+        {
+            "vocabularyName": "application",
+            "translation": "đơn xin việc",
+            "type": "/,æpli'kei∫n/",
+            "texturePath": "https://iili.io/JrdwYJ4.jpg"
+        },
+        {
+            "vocabularyName": "loan",
+            "translation": "khoản vay",
+            "type": "/ləʊn/",
+            "texturePath": "https://iili.io/Jrdw5gf.jpg"
+        }
+    ]
+}

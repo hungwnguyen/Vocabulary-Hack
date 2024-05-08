@@ -11,6 +11,7 @@ using HungwNguyen.MUIP;
 using UnityEngine.Events;
 using TMPro;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace Hungw
 {
@@ -43,20 +44,19 @@ namespace Hungw
         private int currentAPInumber, maxCount;
         private string currentPath, blodId, currentGoogleTranslatePath;
         public bool isChangePath { get; private set; }
-        private HungwAPi.Folder folder;
+        public HungwAPi.Folder folder;
         private int imageCount;
         private string currentVoid;
+
+
         #endregion
         private void Awake()
         {
-            if (PlayerPrefs.GetInt("Data", 0) == 0)
+            if (!PlayerPrefs.HasKey("soundPath"))
             {
-                IOController.CreateDirectory("Image");
-                IOController.CreateDirectory("Sound");
-                PlayerPrefs.SetInt("Data", 1);
+                PlayerPrefs.SetInt("soundPath", Random.Range(0, soundKeys.Count));
             }
-            //currentAPInumber = PlayerPrefs.GetInt("soundPath", Random.Range(0, soundKeys.Count));
-            currentAPInumber = PlayerPrefs.GetInt("soundPath", 0);
+            currentAPInumber = PlayerPrefs.GetInt("", 0);
             autocompleteVocabulary = new AutocompleteVocabulary();
             autocompleteVocabulary.suggestions = new List<Vocabulary>();
             currentTranslation = new Dictionary<string, string>();
@@ -85,6 +85,8 @@ namespace Hungw
                 voiceToggleFemale.isOn = false;
             }
         }
+
+
 
         private void OnblodInputFieldEndEdit(string value)
         {
@@ -255,20 +257,7 @@ namespace Hungw
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                this.folder = JsonConvert.DeserializeObject<HungwAPi.Folder>(request.downloadHandler.text);
-                if (IOController.Folder.name.Contains(folder.folderName))
-                {
-                    for (int i = 1; ; i++)
-                    {
-                        if (!IOController.Folder.name.Contains(folder.folderName + $"({i})"))
-                        {
-                            folder.folderName = folder.folderName + $"({i})";
-                            break;
-                        }
-                    }
-                }
-                IOController.CurrentFolderName = folder.folderName;
-                IOController.Folder.vocabularies[folder.folderName] = folder.vocabularies;
+                ConvertData(request.downloadHandler.text);
                 OnGetJsonBlobComplete();
             }
             else
@@ -278,14 +267,40 @@ namespace Hungw
                 StopAllCoroutines();
             }
         }
-        public void OnGetJsonBlobComplete()
+
+        public void ConvertData(string data)
+        {
+            this.folder = JsonConvert.DeserializeObject<HungwAPi.Folder>(data);
+            if (IOController.Folder.name.Contains(folder.folderName))
+            {
+                for (int i = 1; ; i++)
+                {
+                    if (!IOController.Folder.name.Contains(folder.folderName + $"({i})"))
+                    {
+                        folder.folderName = folder.folderName + $"({i})";
+                        break;
+                    }
+                }
+            }
+            IOController.CurrentFolderName = folder.folderName;
+            IOController.Folder.vocabularies[folder.folderName] = folder.vocabularies;
+        }
+        public void OnGetJsonBlobComplete(bool isReadFromLocal = false)
         {
             progressSlider.currentValue = 50;
-            StartCoroutine(DownloadImages());
+            StartCoroutine(DownloadImages(isReadFromLocal));
         }
 
-        public IEnumerator DownloadImages()
+        public IEnumerator DownloadImages(bool isReadFromLocal = false)
         {
+            if (isReadFromLocal)
+            {
+                folder = new HungwAPi.Folder();
+                folder.vocabularies = IOController.Folder.vocabularies[IOController.CurrentFolderName];
+                folder.folderName = IOController.CurrentFolderName;
+                _OnProgress.Invoke();
+                progressText.text = "Đang tải ảnh từ máy chủ!";
+            }
             for (int i = 0; i < folder.vocabularies.Length; i++)
             {
                 if (!string.IsNullOrEmpty(folder.vocabularies[i].texturePath))
@@ -298,7 +313,12 @@ namespace Hungw
                     if (request.result == UnityWebRequest.Result.Success)
                     {
                         Texture2D texture = ((DownloadHandlerTexture)request.downloadHandler).texture;
-                        IOController.Folder.texture.Add(key, texture);
+                        IOController.Folder.texture[key] = texture;
+                        if (isReadFromLocal)
+                        {
+                            IOController.CreateDirectory(folder.folderName, "/Image/");
+                            IOController.SaveTexture(texture, folder.folderName, folder.vocabularies[i].vocabularyName);
+                        }
                         progressSlider.currentValue = 50 + 50 * i / folder.vocabularies.Length;
                         StartCoroutine(ProgressAnimation(50 + 50 * (i + 0.98f) / folder.vocabularies.Length));
                     }
@@ -313,7 +333,10 @@ namespace Hungw
             progressText.text = "<color=green>" + "Chúc mừng bạn đã tải xong!" + "</color>";
             yield return new WaitForEndOfFrame();
             _OnGetImageSuccess.Invoke();
-            UIManager.Instance.SaveFolder(true);
+            if (!isReadFromLocal)
+            {
+                UIManager.Instance.SaveFolder(true);
+            }
         }
 
         // Method to update a JSON Blob
@@ -572,13 +595,13 @@ namespace Hungw
             PlayerPrefs.SetString("void", name);
         }
 
-        public void GetSound(string word)
+        public void GetSound(string word, string api = "", int index = 0)
         {
 
             if (SoundManager.CreatePlayFXSound(word))
                 return;
-
-            string api = this.currentVoid.Equals("John") ? soundPathUK : soundPathUS;
+            if (api == "")
+                api = this.currentVoid.Equals("John") ? soundPathUK : soundPathUS;
 
             Sound sound = new Sound();
 
@@ -598,9 +621,13 @@ namespace Hungw
                     {
                         UIManager.Instance.ClearBug();
                         AudioClip clip = DownloadHandlerAudioClip.GetContent(res.Request);
-                        if (clip.length == 0)
+                        if (clip.length == 0 && index == 0)
                         {
-                            UIManager.Instance.bug.text = "Không tìm thấy âm thanh";
+                            GetSound(word, api == soundPathUK ? soundPathUS : soundPathUK, 1);
+                        }
+                        else if (clip.length == 0 && index == 1)
+                        {
+                            GetSoundFromText(word);
                         }
                         else
                         {
@@ -617,7 +644,7 @@ namespace Hungw
                 }
                 else
                 {
-                    UIManager.Instance.bug.text = "Không tìm thấy âm thanh";
+                    GetSoundFromText(word);
                 }
             }).Catch(err =>
             {
@@ -627,43 +654,43 @@ namespace Hungw
             );
         }
 
-        // public void GetSound(string word)
-        // {
+        public void GetSoundFromText(string word)
+        {
 
-        //     if (SoundManager.CreatePlayFXSound(word))
-        //         return;
+            if (SoundManager.CreatePlayFXSound(word))
+                return;
 
-        //     string fileUrl = $"https://api.voicerss.org/?key={this.soundKeys[currentAPInumber]}&hl=en-us&v={this.currentVoid}&c=MP3&src=" + word;
-        //     var fileType = AudioType.MPEG;
+            string fileUrl = $"https://api.voicerss.org/?key={this.soundKeys[currentAPInumber]}&hl=en-us&v={this.currentVoid}&c=MP3&src=" + word;
+            var fileType = AudioType.MPEG;
 
-        //     RestClient.Get(new RequestHelper
-        //     {
-        //         Uri = fileUrl,
-        //         DownloadHandler = new DownloadHandlerAudioClip(fileUrl, fileType)
-        //     }).Then(res =>
-        //     {
-        //         UIManager.Instance.ClearBug();
-        //         AudioClip clip = DownloadHandlerAudioClip.GetContent(res.Request);
-        //         if (clip.length == 0)
-        //         {
-        //             currentAPInumber = (currentAPInumber + 1) % soundKeys.Count;
-        //             PlayerPrefs.SetInt("soundPath", currentAPInumber);
-        //             GetSound(word);
-        //         }
-        //         else
-        //         {
-        //             clip.name = word;
-        //             SoundManager.CreatePlayFXSound(clip);
-        //         }
-        //         //string filePath = Path.Combine(Application.persistentDataPath + Path.AltDirectorySeparatorChar + "Music", audio.clip.name);
-        //         //File.WriteAllBytes(filePath, res.Request.downloadHandler.data);
-        //     }).Catch(err =>
-        //     {
-        //         Debug.Log(err.Message);
-        //         UIManager.Instance.bug.text = "Không có kết nối mạng";
-        //     }
-        //     );
-        // }
+            RestClient.Get(new RequestHelper
+            {
+                Uri = fileUrl,
+                DownloadHandler = new DownloadHandlerAudioClip(fileUrl, fileType)
+            }).Then(res =>
+            {
+                UIManager.Instance.ClearBug();
+                AudioClip clip = DownloadHandlerAudioClip.GetContent(res.Request);
+                if (clip.length == 0)
+                {
+                    currentAPInumber = (currentAPInumber + 1) % soundKeys.Count;
+                    PlayerPrefs.SetInt("soundPath", currentAPInumber);
+                    GetSound(word);
+                }
+                else
+                {
+                    clip.name = word;
+                    SoundManager.CreatePlayFXSound(clip);
+                }
+                //string filePath = Path.Combine(Application.persistentDataPath + Path.AltDirectorySeparatorChar + "Music", audio.clip.name);
+                //File.WriteAllBytes(filePath, res.Request.downloadHandler.data);
+            }).Catch(err =>
+            {
+                Debug.Log(err.Message);
+                UIManager.Instance.bug.text = "Không có kết nối mạng";
+            }
+            );
+        }
     }
 
     public class AutocompleteVocabulary
