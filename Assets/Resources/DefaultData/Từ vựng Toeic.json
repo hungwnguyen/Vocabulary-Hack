@@ -1,7 +1,49 @@
 {
-    "folderName": "Toeic 900 Part 2",
+    "folderName": "Từ vựng Toeic",
     "vocabularies": [
         {
+            "vocabularyName": "acceptance",
+            "translation": "(n)sự chấp nhận ( trái nghĩa với Protest)",
+            "type": "/ək'septəns/",
+            "texturePath": "https://iili.io/JgLC1te.jpg"
+        },
+        {
+            "vocabularyName": "inconvenience",
+            "translation": "danh từ này trái nghĩa với danh từ convenience",
+            "type": "/,iŋkən'vi:njəns/",
+            "texturePath": "https://iili.io/JgLCGou.jpg"
+        },
+        {
+            "vocabularyName": "propose",
+            "translation": "cầu hôn hoặc có thể hiểu là đề nghị",
+            "type": "/prə'pəʊz/",
+            "texturePath": "https://iili.io/JgLCjSV.jpg"
+        },
+        {
+            "vocabularyName": "employee",
+            "translation": "người lao động",
+            "type": "/im'plɔi'i:/",
+            "texturePath": "https://iili.io/JgLCVPj.jpg"
+        },
+        {
+            "vocabularyName": "employ",
+            "translation": "thuê",
+            "type": "/im'plɔi/",
+            "texturePath": "https://iili.io/JgLCMMb.jpg"
+        },
+        {
+            "vocabularyName": "employer",
+            "translation": "nhà tuyển dụng",
+            "type": "/im'plɔiə[r]/",
+            "texturePath": "https://iili.io/JgLCXKx.jpg"
+        },
+        {
+            "vocabularyName": "employment",
+            "translation": "n : việc thuê người làm",
+            "type": "/im'plɔimənt/",
+            "texturePath": "https://iili.io/JgLChcQ.jpg"
+        },
+	{
             "vocabularyName": "attendance",
             "translation": "(n)sự tham dự (đi với record là bảng điểm danh)",
             "type": "/ə'tendəns/",

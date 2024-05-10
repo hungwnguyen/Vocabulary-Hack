@@ -17,10 +17,16 @@ namespace Hungw
         private Dictionary<int, bool> checkQuestion;
         private string[] answers;
         public string correctAns { get; private set; }
+        public bool isCorrect { get; set; }
         private string[] replateChar = new string[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
         public bool CheckAnswer(int index)
         {
             return index == correctIndex;
+        }
+
+        public void UnChooseAnswer()
+        {
+            answer.UnChooseAnswer(correctIndex);
         }
 
         public void Init()
@@ -58,6 +64,7 @@ namespace Hungw
         public void CreateQuestion()
         {
             AnimatedQuestion();
+            isCorrect = false;
             answers = new string[] { "", "", "", "" };
             this.currentVocaIndex = Random.Range(0, vocaSize);
             CreateCurrentIndex();

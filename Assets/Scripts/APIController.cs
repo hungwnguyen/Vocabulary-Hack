@@ -22,6 +22,8 @@ namespace Hungw
 
         [Space(5f), Header("Run when progress start!"), Space(5f)]
         public UnityEvent _OnProgress = new UnityEvent();
+        [Space(5f), Header("Run when progress error!"), Space(5f)]
+        public UnityEvent _OnProgressError = new UnityEvent();
         [Space(5f), Header("Run when get data success!"), Space(5f)]
         public UnityEvent _OnGetImageSuccess = new UnityEvent();
         [Space(5f), Header("Run when get data error!"), Space(5f)]
@@ -324,7 +326,9 @@ namespace Hungw
                     }
                     else
                     {
-                        Debug.Log(request.error);
+                        UIManager.Instance.bug.text = "Không thể kết nối tới máy chủ!";
+                        this._OnProgressError.Invoke();
+                        yield break;
                     }
                 }
             }

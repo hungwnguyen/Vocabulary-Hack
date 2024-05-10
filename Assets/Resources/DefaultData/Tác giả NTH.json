@@ -1,0 +1,17 @@
+{
+    "folderName": "Tác giả NTH",
+    "vocabularies": [
+        {
+            "vocabularyName": "Nguyễn Tiến Hưng",
+            "translation": "Dự án này được làm bởi một mình Nguyễn Tiến Hưng",
+            "type": "",
+            "texturePath": "https://iili.io/J4tp1na.jpg"
+        },
+        {
+            "vocabularyName": "Liên hệ qua email",
+            "translation": "Contact via email : hanoihung123321@gmail.com",
+            "type": "",
+            "texturePath": "https://iili.io/J4tpEMJ.jpg"
+        }
+    ]
+}

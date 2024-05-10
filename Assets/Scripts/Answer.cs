@@ -14,7 +14,7 @@ namespace Hungw
         [SerializeField] private Question question;
         [SerializeField] private GameObject stopTouch;
         private string[] choosenAnswer = new string[] { "A", "B", "C", "D" };
-        // Start is called before the first frame update
+        private bool isCorrect;
 
         public void SetAnswerText(string[] answers)
         {
@@ -40,6 +40,13 @@ namespace Hungw
             }
         }
 
+        public void UnChooseAnswer(int correctIndex)
+        {
+            answerTexts[correctIndex].color = wrongColor;
+            stopTouch.SetActive(true);
+            StartCoroutine(ChangeQuestion(true));
+        }
+
         public void ResetAnswerColor()
         {
             for (int i = 0; i < answerTexts.Count; i++)
@@ -48,22 +55,43 @@ namespace Hungw
             }
         }
 
-        private IEnumerator ChangeQuestion()
+        private IEnumerator ChangeQuestion(bool isLimitTime = false)
         {
+            if (!question.isCorrect)
+            {
+                GameController.Instance.endState.DegreasCount();
+            }
+            else
+            {
+                GameController.Instance.UpdateScore(100);
+            }
             yield return new WaitForSeconds(1);
             ResetAnswerColor();
-            question.CreateQuestion();
+            if (isLimitTime)
+            {
+                question.CreateQuestion();
+            }
+            else
+            {
+                GameController.Instance.ChangeEndState();
+            }
             stopTouch.SetActive(false);
         }
 
         public void ChooseAnswer(int index)
         {
+            if (GameController.Instance.isEndLimitTime)
+            {
+                return;
+            }
+            GameController.Instance.ChangeIdleState();
             for (int i = 0; i < answerTexts.Count; i++)
             {
                 bool isCorrect = question.CheckAnswer(i);
                 if (i == index)
                 {
                     SetAnswerColor(i, isCorrect);
+                    this.isCorrect = isCorrect;
                     if (isCorrect)
                     {
                         SoundManager.CreatePlayFXSound(SoundManager.Instance.audioClip.aud_correct);
@@ -78,6 +106,7 @@ namespace Hungw
                     SetAnswerColor(i, true);
                 }
             }
+            question.isCorrect = this.isCorrect;
             stopTouch.SetActive(true);
             StartCoroutine(ChangeQuestion());
         }
