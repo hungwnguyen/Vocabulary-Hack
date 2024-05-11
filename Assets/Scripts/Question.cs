@@ -81,7 +81,9 @@ namespace Hungw
             {
                 this.image.gameObject.SetActive(false);
             }
-            SetQuestion("Chọn đáp án đúng : " + this.vocabularies[currentVocaIndex].translation + " là gì ?", answers);
+            string question = this.vocabularies[currentVocaIndex].translation;
+            question = question.Substring(0, 1).ToUpper() + question.Substring(1);
+            SetQuestion(question + " là gì ?", answers);
         }
 
 

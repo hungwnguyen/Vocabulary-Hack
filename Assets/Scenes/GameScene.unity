@@ -1340,14 +1340,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
+  m_Color: {r: 0.17254902, g: 0.19607845, b: 0.24313727, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: cca3ca807d25c1844b79eeb77e944d05, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5e16c7aea118d68498053518146c9cf9, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2677,7 +2677,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 686393640}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -3148,7 +3148,6 @@ GameObject:
   - component: {fileID: 817778602}
   - component: {fileID: 817778604}
   - component: {fileID: 817778603}
-  - component: {fileID: 817778605}
   m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
@@ -3188,7 +3187,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0}
+  m_Color: {r: 0.10980393, g: 0.13333334, b: 0.16470589, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3213,53 +3212,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 817778601}
   m_CullTransparentMesh: 0
---- !u!114 &817778605
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 817778601}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9d2f9067277ade4e9b47012ea4d9e17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _gradientType: 2
-  _blendMode: 2
-  _modifyVertices: 1
-  _offset: -0.022
-  _zoom: 0.53
-  _effectGradient:
-    serializedVersion: 2
-    key0: {r: 0.3250267, g: 0.5489548, b: 0.8301887, a: 1}
-    key1: {r: 0.6886792, g: 0.31510323, b: 0.66615653, a: 1}
-    key2: {r: 0.67816913, g: 0.3218619, b: 0.6708973, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 1157
-    ctime1: 65535
-    ctime2: 65535
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: 0
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
 --- !u!1 &834428283
 GameObject:
   m_ObjectHideFlags: 0
@@ -4057,6 +4009,18 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 42662717}
+        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
+        m_MethodName: Play
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: disappear
           m_BoolArgument: 0
         m_CallState: 2
   onDoubleClick:
@@ -5991,7 +5955,6 @@ GameObject:
   - component: {fileID: 1683792156}
   - component: {fileID: 1683792158}
   - component: {fileID: 1683792157}
-  - component: {fileID: 1683792159}
   m_Layer: 5
   m_Name: BG
   m_TagString: Untagged
@@ -6031,7 +5994,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.29803923}
+  m_Color: {r: 0.17254902, g: 0.19607845, b: 0.24313727, a: 0.5882353}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6056,53 +6019,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1683792155}
   m_CullTransparentMesh: 1
---- !u!114 &1683792159
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1683792155}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9d2f9067277ade4e9b47012ea4d9e17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _gradientType: 1
-  _blendMode: 2
-  _modifyVertices: 1
-  _offset: 0
-  _zoom: 1
-  _effectGradient:
-    serializedVersion: 2
-    key0: {r: 0.6886792, g: 0.31510323, b: 0.66615653, a: 1}
-    key1: {r: 0.3250267, g: 0.5489548, b: 0.8301887, a: 1}
-    key2: {r: 0.9593928, g: 1, b: 0, a: 0}
-    key3: {r: 1, g: 0, b: 0.8197484, a: 0}
-    key4: {r: 0, g: 0.17274237, b: 1, a: 0}
-    key5: {r: 0.00965035, g: 1, b: 0, a: 0}
-    key6: {r: 0, g: 0.98302364, b: 1, a: 0}
-    key7: {r: 1, g: 1, b: 1, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 18311
-    ctime3: 28720
-    ctime4: 39128
-    ctime5: 48766
-    ctime6: 57247
-    ctime7: 65535
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: 0
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
 --- !u!1 &1715525687
 GameObject:
   m_ObjectHideFlags: 0
@@ -7103,67 +7019,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1df49360593806a43b1ed85d38730dce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1001 &1990434683
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1121993851336240814, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: audioClip
-      value: 
-      objectReference: {fileID: 11400000, guid: 0b055fb3325880b4ab3666244bdc36bb, type: 2}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0.13376622
-      objectReference: {fileID: 0}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.0906198
-      objectReference: {fileID: 0}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -10.453286
-      objectReference: {fileID: 0}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1874332262251440639, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2969426817566749059, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
-      propertyPath: m_Name
-      value: SoundManager
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6ab32333bf8d46347853e523f9b217e3, type: 3}
 --- !u!1 &1993454775
 GameObject:
   m_ObjectHideFlags: 0
@@ -8723,4 +8578,3 @@ SceneRoots:
   m_Roots:
   - {fileID: 776439082}
   - {fileID: 1114761807}
-  - {fileID: 1990434683}

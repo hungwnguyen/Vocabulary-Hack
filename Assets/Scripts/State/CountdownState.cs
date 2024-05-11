@@ -22,6 +22,11 @@ public class CountdownState : State
         this.countdownTimer = originalTimer;
     }
 
+    public override void Exit()
+    {
+        countdownText.GetComponent<Animator>().Play("disappear");
+    }
+
     public override void Enter()
     {
         this.timer = 0;
