@@ -7,6 +7,7 @@ using System.Linq;
 using FancyScrollView.Example09;
 using System.Collections;
 using Hungw;
+using System.Security.Cryptography;
 
 namespace IO
 {
@@ -169,12 +170,13 @@ namespace IO
         public static List<string> GetAllFileNames()
         {
             string[] filePaths = Directory.GetFiles(Application.persistentDataPath);
-            string[] fileNames = new string[filePaths.Length];
+            List<string> fileNames = new List<string>();
             for (int i = 0; i < filePaths.Length; i++)
             {
-                fileNames[i] = Path.GetFileNameWithoutExtension(filePaths[i]);
+                if (Path.GetExtension(filePaths[i]) != ".json") continue;
+                fileNames.Add(Path.GetFileNameWithoutExtension(filePaths[i]));
             }
-            Array.Sort(fileNames);
+            fileNames.Sort();
             return fileNames.ToList<string>();
         }
 

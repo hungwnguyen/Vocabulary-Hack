@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -25,11 +26,7 @@ namespace Hungw
         }
 
         public void SetAnswerColor(int index, bool isCorrect)
-        {
-            if (!GameController.Instance.isTest)
-            {
-                APIController.Instance.GetSound(question.correctAns);
-            }
+        { 
             if (isCorrect)
             {
                 answerTexts[index].color = correctColor;
@@ -42,7 +39,10 @@ namespace Hungw
 
         public void UnChooseAnswer(int correctIndex)
         {
-            answerTexts[correctIndex].color = wrongColor;
+            if (question.isChoiceMode)
+            {
+                answerTexts[correctIndex].color = wrongColor;
+            }
             stopTouch.SetActive(true);
             StartCoroutine(ChangeQuestion(true));
         }
@@ -57,6 +57,10 @@ namespace Hungw
 
         private IEnumerator ChangeQuestion(bool isLimitTime = false)
         {
+            if (!GameController.Instance.isTest)
+            {
+                APIController.Instance.GetSound(question.correctAns);
+            }
             if (!question.isCorrect)
             {
                 GameController.Instance.endState.DegreasCount();
@@ -66,7 +70,10 @@ namespace Hungw
                 GameController.Instance.UpdateScore(100);
             }
             yield return new WaitForSeconds(1);
-            ResetAnswerColor();
+            if (question.isChoiceMode)
+            {
+                ResetAnswerColor();
+            }
             if (isLimitTime)
             {
                 question.CreateQuestion();
@@ -76,6 +83,17 @@ namespace Hungw
                 GameController.Instance.ChangeEndState();
             }
             stopTouch.SetActive(false);
+        }
+
+        public void ChooseAnswer()
+        {
+            if (GameController.Instance.isEndLimitTime)
+            {
+                return;
+            }
+            question.CheckAnswerInChoiceMode();
+            stopTouch.SetActive(true);
+            StartCoroutine(ChangeQuestion());
         }
 
         public void ChooseAnswer(int index)

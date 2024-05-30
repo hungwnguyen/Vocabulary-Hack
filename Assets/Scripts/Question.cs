@@ -2,16 +2,19 @@ using System.Collections.Generic;
 using IO;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using HungwNguyen.MUIP;
 
 namespace Hungw
 {
     public class Question : MonoBehaviour
     {
         [SerializeField] private Answer answer;
-        [SerializeField] private TMPro.TMP_Text questionText;
+        [SerializeField] private TMPro.TMP_Text questionText, answerTextResult;
         [SerializeField] private RawImage image;
         [SerializeField] private float targetWidth, targetHeight;
         [SerializeField] private Animator QA;
+        [SerializeField] private TMP_InputField answerText;
         private IO.Vocabulary[] vocabularies;
         private int vocaSize, currentVocaIndex, correctIndex;
         private Dictionary<int, bool> checkQuestion;
@@ -19,6 +22,7 @@ namespace Hungw
         public string correctAns { get; private set; }
         public bool isCorrect { get; set; }
         private string[] replateChar = new string[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
+        public bool isChoiceMode { get; set; }
         public bool CheckAnswer(int index)
         {
             return index == correctIndex;
@@ -38,11 +42,19 @@ namespace Hungw
             CreateQuestion();
         }
 
-        public void AnimatedQuestion()
+        public void CheckAnswerInChoiceMode()
         {
-            QA.SetTrigger("play");
+            this.isCorrect = answerText.text.ToLower().Equals(correctAns.ToLower());
+            if (isCorrect)
+            {
+                SoundManager.CreatePlayFXSound(SoundManager.Instance.audioClip.aud_correct);
+            }
+            else
+            {
+                SoundManager.CreatePlayFXSound(SoundManager.Instance.audioClip.aud_wrong);
+                answerTextResult.text = correctAns;
+            }
         }
-
 
         private void CreateCurrentIndex()
         {
@@ -63,7 +75,8 @@ namespace Hungw
 
         public void CreateQuestion()
         {
-            AnimatedQuestion();
+            answerTextResult.text = "";
+            isChoiceMode = Random.Range(0, 1000000000) % 2 == 0;
             isCorrect = false;
             answers = new string[] { "", "", "", "" };
             this.currentVocaIndex = Random.Range(0, vocaSize);
@@ -107,15 +120,30 @@ namespace Hungw
             return index;
         }
 
-        private void CreateAnswer()
+        private void CreateChoiceMode()
         {
             correctIndex = Random.Range(0, 4);
-            this.correctAns = vocabularies[currentVocaIndex].vocabularyName;
             answers[correctIndex] = correctAns;
             string wrongAnswer = vocabularies[GetWrongVocabularyIndex()].vocabularyName;
             answers[GetWrongIndex()] = wrongAnswer;
             answers[GetWrongIndex()] = GetRandomReplateCharacter(wrongAnswer);
             CreateWrongAnswer(GetWrongIndex());
+        }
+
+        private void CreateAnswer()
+        {
+            this.correctAns = vocabularies[currentVocaIndex].vocabularyName;
+            if (isChoiceMode)
+            {
+                CreateChoiceMode();
+                QA.Play("Create question");
+            }
+            else
+            {
+                QA.Play("Create question 2");
+                answerText.text = "";
+            }
+            
         }
 
         private void CreateWrongAnswer(int index)

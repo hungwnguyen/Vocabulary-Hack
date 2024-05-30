@@ -33,7 +33,7 @@ public class CountdownState : State
         count++;
         int step = count / 8;
         this.countdownTimer = originalTimer - step * 5;
-        this.countdownTimer = countdownTimer > 0 ? countdownTimer : 2;
+        this.countdownTimer = countdownTimer > 0 ? countdownTimer : 5;
         countdownText.text = $"00:{(countdownTimer > 9 ? countdownTimer : "0" + countdownTimer)}";
         countdownText.GetComponent<Animator>().Play("appear");
     }

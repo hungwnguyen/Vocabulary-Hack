@@ -12,6 +12,8 @@ using TMPro;
 using HungwNguyen.MUIP;
 using Hungw;
 using System.Collections;
+using AnotherFileBrowser.Windows;
+using UnityEngine.Networking;
 
 namespace FancyScrollView.Example09
 {
@@ -203,8 +205,10 @@ namespace FancyScrollView.Example09
             background.color = Color.Lerp(Color.gray, new Color32(246, 237, 118, 255), pop);
         }
 
+        [System.Obsolete]
         public void PickImage(int maxSize)
         {
+#if UNITY_ANDROID || UNITY_IOS
             NativeGallery.Permission permission = NativeGallery.GetImageFromGallery((path) =>
             {
                 if (path != null)
@@ -220,6 +224,37 @@ namespace FancyScrollView.Example09
                     ResizeImage(texture);
                 }
             });
+#else
+            var bp = new BrowserProperties();
+            bp.filter = "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png";
+            bp.filterIndex = 0;
+
+            new FileBrowser().OpenFileBrowser(bp, path =>
+            {
+                //Load image from local path with UWR
+                StartCoroutine(LoadImage(path));
+            });
+#endif
+        }
+
+        [System.Obsolete]
+        IEnumerator LoadImage(string path)
+        {
+            using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(path))
+            {
+                yield return uwr.SendWebRequest();
+
+                if (uwr.isNetworkError || uwr.isHttpError)
+                {
+                    Hungw.UIManager.Instance.bug.text = "Không thể tải ảnh lên!";
+                }
+                else
+                {
+                    var uwrTexture = DownloadHandlerTexture.GetContent(uwr);
+                    SetTexture(uwrTexture);
+                    ResizeImage(uwrTexture);
+                }
+            }
         }
 
         private void ResizeImage(Texture2D texture)
